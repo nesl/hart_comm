@@ -9,7 +9,12 @@ app.use(bodyParser.json());
 
 
 app.post('/x', function(req, res, next) {
-	console.log('receiving post request', req.body.name);
+	console.log('receiving post request', req);
+	res.end()
+});
+
+app.post('/testbench', function(req, res, next) {
+	console.log('testbench announcement:', req.body.id);
 	res.end()
 });
 
