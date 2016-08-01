@@ -2,6 +2,7 @@ var http = require("http");
 var express = require("express");
 var request = require("request");
 var bodyParser = require('body-parser');
+var querystring = require('querystring');
 
 
 // local IP information
@@ -20,12 +21,20 @@ var app = express();
 app.use(bodyParser.json());
 
 app.post('/y', function(req, res, next) {
+	var form = {
+		name: "Bob"
+	};
+	var formData = querystring.stringify(form);
+	var contentLength = formData.length;
+
 	request({
+		headers: {
+			'Content-Length': contentLength,
+			'Content-Type': 'application/x-www-form-urlencoded'
+		},
 		uri: "http://" + server_url + "/x",
+		body: formData,
 		method: "POST",
-		form: {
-			name: "Bob"
-		}
 	}, function(error, response, body) {
 		  console.log(body);
 	});

@@ -5,7 +5,7 @@ var bodyParser = require('body-parser');
 var port = 8888;
 
 var app = express();
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended:false }));
 
 
 app.post('/x', function(req, res, next) {
