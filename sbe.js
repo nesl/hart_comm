@@ -1,19 +1,15 @@
 //var WebSocketServer = require("ws").Server;
 var http = require("http");
-//var fs = require('fs');
-//var path = require("path");
 var express = require("express");
-//var readline = require('readline');
-
+var bodyParser = require('body-parser');
 var port = 8888;
 
 var app = express();
-//app.use(express.static(__dirname+ "/../"));
-//app.use('/abccccc', function(req, res, next) {
-//	console.log('come to here');
-//});
+app.use(bodyParser.json());
+
+
 app.post('/x', function(req, res, next) {
-	console.log('receiving post request', req);
+	console.log('receiving post request', req.body.name);
 	res.end()
 });
 

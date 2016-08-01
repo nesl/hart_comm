@@ -1,24 +1,21 @@
-//var WebSocketServer = require("ws").Server;
 var http = require("http");
-//var fs = require('fs');
-//var path = require("path");
 var express = require("express");
-//var readline = require('readline');
 var request = require("request");
+var bodyParser = require('body-parser');
 
+// local IP information
 var port = 8889;
 
-var app = express();
-//app.use(express.static(__dirname+ "/../"));
-//app.use('/abccccc', function(req, res, next) {
-//	console.log('come to here');
-//});
+// remote IP information
+var server_url = "localhost:8888";
 
-var foreign_url = "localhost:8888";
+// creating the express app
+var app = express();
+app.use(bodyParser.json());
 
 app.post('/y', function(req, res, next) {
 	request({
-		uri: "http://" + foreign_url + "/x",
+		uri: "http://" + server_url + "/x",
 		method: "POST",
 		form: {
 			name: "Bob"
@@ -30,9 +27,8 @@ app.post('/y', function(req, res, next) {
 	res.end()
 });
 
+// Fire up the server
 console.log("app listening on %d ", port);
-
 var server = http.createServer(app);
 server.listen(port, 'localhost');
-
 console.log("http server listening on %d", port);
