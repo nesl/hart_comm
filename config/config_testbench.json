@@ -7,20 +7,20 @@
 	"duts" : [
 		{
 			"name": "mbed1",
-			"type": 1,
+			"type": "mbed",
 			"id" : 1,
 			"path" : "/dev/ttyUSB0"
 		}
 	],
 	"wires" : [
 		{
-			"name": "gpio0",
+			"name": "wire1",
 			"first": {
-				"id": 1,
+				"dutid": 1,
 				"pin": "D0"
 			},
 			"second": {
-				"id": 1,
+				"dutid": 1,
 				"pin": "D3"
 			}
 		}
