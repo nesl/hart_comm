@@ -4,6 +4,13 @@
 	"remoteurl" : "localhost",
 	"remoteport" : 8888,
 	"localport" : 8889,
+	"tester" : {
+		"type": "ARM Cortex-M4",
+		"path": "/dev/ttyUSB1",
+		"tickrate": 5e-6,
+		"maxevents": 1000,
+		"timeresolution": 0.1e-6
+	},
 	"duts" : [
 		{
 			"name": "mbed1",

@@ -30,7 +30,8 @@ for( var i=0; i<numDuts; i++ ){
 var app = express();
 app.use(bodyParser.json());
 
-app.post('/y', function(req, res, next) {
+// DUT Firmware Programming
+app.post('/program', function(req, res, next) {
 	var form = {
 		name: "Bob"
 	};
