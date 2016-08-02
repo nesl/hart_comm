@@ -1,3 +1,4 @@
+// ===== REQUIRED PACKAGES =====
 var http = require("http");
 var express = require("express");
 var request = require("request");
@@ -5,17 +6,16 @@ var bodyParser = require('body-parser');
 var querystring = require('querystring');
 var fs = require('fs');
 
+// ===== LOCAL LIBRARIES =====
 var dutlib = require('./jsobjects/dut.js');
 var testbenchlib = require('./jsobjects/testbench.js');
 
 // read config file
 var config = JSON.parse(fs.readFileSync('config/config_testbench.json', 'utf8'));
-
-// remote and local servers
 var remote = config.remoteurl + ':' + config.remoteport;
 
 // configure Testbench
-var ANNOUNCE_PERIOD = 5*1000;
+var ANNOUNCE_PERIOD = 10*1000;
 console.log('Initializing testbench Type: [' + config.type + '], Id: [' + config.id + ']' );
 var testbench = new testbenchlib.Testbench(config.type, config.id, config.localport);
 numDuts = config.duts.length;
@@ -31,30 +31,21 @@ var app = express();
 app.use(bodyParser.json());
 
 // DUT Firmware Programming
-app.post('/program', function(req, res, next) {
-	var form = {
-		name: "Bob"
-	};
-	var formData = querystring.stringify(form);
-	var contentLength = formData.length;
+app.post('/dut_program', function(req, res, next) {
+	var target = req.body.dut;
+	var firmware = req.body.firmware;
+	console.log('Firmware received for ', target.name);
+	// TODO: Program specified target
+});
 
-	request({
-		headers: {
-			'Content-Length': contentLength,
-			'Content-Type': 'application/x-www-form-urlencoded'
-		},
-		uri: "http://" + remote + "/x",
-		body: formData,
-		method: "POST",
-	}, function(error, response, body) {
-		  console.log(body);
-	});
-	console.log('receiving post request');
-	res.end()
+// DUT Reset
+app.post('/dut_reset', function(req, res, next) {
+	var target = req.body.dut;
+	console.log('Reset requested for ', target.name);
+	// TODO: Reset specified target
 });
 
 // Fire up the server
-console.log("app listening on %d ", config.localport);
 var server = http.createServer(app);
 server.listen(config.localport, 'localhost');
 console.log("http server listening on %d", config.localport);
