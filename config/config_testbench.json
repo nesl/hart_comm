@@ -11,18 +11,5 @@
 			"id" : 1,
 			"path" : "/dev/ttyUSB0"
 		}
-	],
-	"wires" : [
-		{
-			"name": "gpio0",
-			"first": {
-				"id": 1,
-				"pin": "D0"
-			},
-			"second": {
-				"id": 1,
-				"pin": "D3"
-			}
-		}
 	]
 }

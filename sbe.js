@@ -14,7 +14,7 @@ app.post('/x', function(req, res, next) {
 });
 
 app.post('/testbench', function(req, res, next) {
-	console.log('testbench announcement:', req.body.id);
+	console.log('testbench announcement:', req.body.testbench);
 	res.end()
 });
 

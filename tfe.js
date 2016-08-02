@@ -9,7 +9,7 @@ var dutlib = require('./jsobjects/dut.js');
 var testbenchlib = require('./jsobjects/testbench.js');
 
 // read config file
-var config = JSON.parse(fs.readFileSync('config_tfe.json', 'utf8'));
+var config = JSON.parse(fs.readFileSync('config/config_testbench.json', 'utf8'));
 
 // remote and local servers
 var remote = config.remoteurl + ':' + config.remoteport;
@@ -66,8 +66,7 @@ function announcePresence() {
 		uri: "http://" + remote + "/testbench",
 		method: "POST",
 		form: {
-			id: testbench.id,
-			duts: 0,
+			testbench: JSON.stringify(config)
 		}
 	}, function(error, response, body) {
 		  console.log(body);
