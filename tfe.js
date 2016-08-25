@@ -1,3 +1,7 @@
+/*
+ * TESTBENCH FRONT END (tfe)
+*/
+
 // ===== REQUIRED PACKAGES =====
 var http = require("http");
 var express = require("express");
@@ -10,11 +14,11 @@ var fs = require('fs');
 var dutlib = require('./jsobjects/dut.js');
 var testbenchlib = require('./jsobjects/testbench.js');
 
-// read config file
+// read hardware controller config JSON file
 var config = JSON.parse(fs.readFileSync('config/config_testbench.json', 'utf8'));
 var remote = config.remoteurl + ':' + config.remoteport;
 
-// configure Testbench
+// configure Testbench for periodic advertisements using config file
 var ANNOUNCE_PERIOD = 10*1000;
 console.log('Initializing testbench Type: [' + config.type + '], Id: [' + config.id + ']' );
 var testbench = new testbenchlib.Testbench(config.type, config.id, config.localport);
@@ -26,34 +30,35 @@ for( var i=0; i<numDuts; i++ ){
 	testbench.addDut( dut );
 }
 
-// creating the express app
+// creating the node.js express app
 var app = express();
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended:false }));
 
+// =============== HTTP PROTOCOL HOOKS ===============
 // DUT Firmware Programming
-app.post('/dut_program', function(req, res, next) {
+app.post('/dut/program', function(req, res, next) {
 	var target = req.body.dut;
 	var firmware = req.body.firmware;
-	console.log('Firmware received for ', target.name);
+	console.log('Firmware received for ', target);
 	// TODO: Program specified target
+	// !!!
+	res.end()
 });
 
 // DUT Reset
-app.post('/dut_reset', function(req, res, next) {
+app.post('/dut/reset', function(req, res, next) {
 	var target = req.body.dut;
-	console.log('Reset requested for ', target.name);
+	console.log('Reset requested for DUT #', target);
 	// TODO: Reset specified target
+	// !!!
+	res.end()
 });
 
-// Fire up the server
-var server = http.createServer(app);
-server.listen(config.localport, 'localhost');
-console.log("http server listening on %d", config.localport);
-
-// Announce test bench to the server every 10 seconds
+// =============== ANNOUNCE TESTBED TO SERVER ===============
 function announcePresence() {
 	// determine connected devices
-	console.log("announcing presence to server...");
+	console.log("announcing testbed to server...");
 	request({
 		uri: "http://" + remote + "/testbench",
 		method: "POST",
@@ -61,8 +66,13 @@ function announcePresence() {
 			testbench: JSON.stringify(config)
 		}
 	}, function(error, response, body) {
-		  console.log(body);
+		// do nothing with server error or response
 	});
 	setTimeout(announcePresence, ANNOUNCE_PERIOD);
 }
 setTimeout(announcePresence, ANNOUNCE_PERIOD);
+
+// =============== FIRE UP THE SERVER ===============
+var server = http.createServer(app);
+server.listen(config.localport, 'localhost');
+console.log("HTTP server listening on %d", config.localport);
