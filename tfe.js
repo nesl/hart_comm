@@ -81,13 +81,13 @@ app.post('/dut/reset', function(req, res, next) {
 });
 
 // CONTROLLER test waveform file
-app.post('/ctrl/waveform', function(req, res, next) {
+app.post('/ctrl/waveform', upload_waveform.single('waveform'), function(req, res, next) {
 	var target = req.body.dut;
 	console.log('Waveform uploading for DUT: ', target);
 
 	// TODO: Reset specified target
 	// !!!
-	
+
 	res.end()
 });
 
