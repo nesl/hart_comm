@@ -9,10 +9,32 @@ var request = require("request");
 var bodyParser = require('body-parser');
 var querystring = require('querystring');
 var fs = require('fs');
+var multer = require('multer');
 
 // ===== LOCAL LIBRARIES =====
 var dutlib = require('./jsobjects/dut.js');
 var testbenchlib = require('./jsobjects/testbench.js');
+
+// ===== FIRMWARE STORAGE =====
+var firmware_storage = multer.diskStorage({
+	destination: './uploads/',
+	limits: { fileSize: 10*Math.pow(2,20) },
+	filename: function (req, file, cb) {
+        cb(null, 'dut_firmware.bin')
+  	}
+});
+var upload_firmware = multer({ storage: firmware_storage })
+
+// ===== WAVEFORM STORAGE =====
+var waveform_storage = multer.diskStorage({
+	destination: './uploads/',
+	limits: { fileSize: 10*Math.pow(2,20) },
+	filename: function (req, file, cb) {
+        cb(null, 'dut_waveform.wvf')
+  	}
+});
+var upload_waveform = multer({ storage: waveform_storage })
+
 
 // read hardware controller config JSON file
 var config = JSON.parse(fs.readFileSync('config/config_testbench.json', 'utf8'));
@@ -37,62 +59,35 @@ app.use(bodyParser.urlencoded({ extended:false }));
 
 // =============== HTTP PROTOCOL HOOKS ===============
 // DUT Firmware Programming
-app.post('/dut/program', function(req, res, next) {
+app.post('/dut/program', upload_firmware.single('firmware'), function(req, res, next) {
 	var target = req.body.dut;
-	var firmware = req.body.firmware;
-	console.log('Firmware uploading for: ', target);
-	var size = 0;
-	var binfile = new Buffer('');
+	console.log('Firmware uploading for DUT: ', target);
 
-	req.on('data', function (chunk) {
-        binfile = Buffer.concat([binfile, chunk]);
-    });
+	// TODO: Program the specified target
+	// !!!
 
-    req.on('end', function () {
-        console.log("total size = " + binfile.length);
-        fs.writeFile("./log", binfile, function(err) {
-		    if(err) {
-		        return console.log(err);
-		    }
-		}); 
-
-		// TODO: Program specified target
-		// !!!
-
-        res.end("Upload complete");
-        console.log("Upload complete");
-    }); 
-
-    req.on('error', function(e) {
-        console.log("ERROR ERROR: " + e.message);
-    });
-
-	var data = new Buffer('');
-  req.on('data', function(chunk) {
-      data = Buffer.concat([data, chunk]);
-  });
-  req.on('end', function() {
-    req.rawBody = data;
-    next();
-  });
-
+	res.end()
 });
 
 // DUT Reset
 app.post('/dut/reset', function(req, res, next) {
 	var target = req.body.dut;
 	console.log('Reset requested for DUT #', target);
+
 	// TODO: Reset specified target
 	// !!!
+
 	res.end()
 });
 
 // CONTROLLER test waveform file
 app.post('/ctrl/waveform', function(req, res, next) {
 	var target = req.body.dut;
-	console.log('Output waveform uploaded', target);
+	console.log('Waveform uploading for DUT: ', target);
+
 	// TODO: Reset specified target
 	// !!!
+	
 	res.end()
 });
 
