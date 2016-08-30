@@ -48,7 +48,7 @@ var testbench = new testbenchlib.Testbench(config.type, config.id, config.localp
 numDuts = config.duts.length;
 for( var i=0; i<numDuts; i++ ){
 	d = config.duts[i];
-	dut = new dutlib.Dut(d.type, d.id, d.path);
+	dut = new dutlib.Dut(d.type, d.id, d.mount);
 	console.log('     ...adding DUT [' + d.name + '] at ' + dut.path);
 	testbench.addDut( dut );
 }
@@ -146,5 +146,5 @@ setTimeout(announcePresence, ANNOUNCE_PERIOD);
 
 // =============== FIRE UP THE SERVER ===============
 var server = http.createServer(app);
-server.listen(config.localport, 'localhost');
+server.listen(config.localport);
 console.log("HTTP server listening on %d", config.localport);
