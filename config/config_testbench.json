@@ -16,7 +16,8 @@
 			"name": "mbed1",
 			"type": "mbed",
 			"id" : 1,
-			"path" : "/dev/ttyUSB0"
+			"tty" : "/dev/ttyUSB0",
+			"mount" : "/Volumes/MBED1/"
 		}
 	],
 	"wires" : [

@@ -10,6 +10,7 @@ var bodyParser = require('body-parser');
 var querystring = require('querystring');
 var fs = require('fs');
 var multer = require('multer');
+const execSync = require('child_process').execSync;
 
 // ===== LOCAL LIBRARIES =====
 var dutlib = require('./jsobjects/dut.js');
@@ -63,8 +64,24 @@ app.post('/dut/program', upload_firmware.single('firmware'), function(req, res, 
 	var target = req.body.dut;
 	console.log('Firmware uploading for DUT: ', target);
 
-	// TODO: Program the specified target
-	// !!!
+	// find path for specified DUT id
+	path = ''
+	for( var i=0; i<numDuts; i++){
+		d = config.duts[i];
+		if( d.id == target ){
+			path = config.duts[i].mount;
+			break;
+		}
+	}
+
+	if( path == '' ){
+		// DUT not found
+		res.end('No such DUT found');
+		return;
+	}
+
+	// Copy firmware to DUT
+	sysResult = execSync('cp ./uploads/dut_firmware.bin ' + path);
 
 	res.end()
 });
@@ -80,7 +97,26 @@ app.post('/dut/reset', function(req, res, next) {
 	res.end()
 });
 
-// CONTROLLER test waveform file
+// TESTER ENGINE Reset
+app.post('/tester/reset', function(req, res, next) {
+	console.log('Reset requested for test engine');
+
+	// TODO: Reset specified target
+	// !!!
+
+	res.end()
+});
+
+// TESTER ENGINE begin test
+app.post('/tester/start', function(req, res, next) {
+	console.log('Start requested for test engine');
+
+	// Reset specified target
+
+	res.end()
+});
+
+// CONTROLLER upload test waveform file
 app.post('/ctrl/waveform', upload_waveform.single('waveform'), function(req, res, next) {
 	var target = req.body.dut;
 	console.log('Waveform uploading for DUT: ', target);
@@ -94,7 +130,7 @@ app.post('/ctrl/waveform', upload_waveform.single('waveform'), function(req, res
 // =============== ANNOUNCE TESTBED TO SERVER ===============
 function announcePresence() {
 	// determine connected devices
-	console.log("announcing testbed to server...");
+	//console.log("announcing testbed to server...");
 	request({
 		uri: "http://" + remote + "/testbench",
 		method: "POST",
