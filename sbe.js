@@ -1,5 +1,6 @@
 /*
  * SERVER BACK END (sbe)
+ * (NOTE: this is deprecated)
 */
 
 // ===== REQUIRED PACKAGES =====

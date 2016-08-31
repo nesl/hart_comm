@@ -2,7 +2,7 @@
 	"type" : "Macbook Pro",
 	"id" : 1,
 	"remoteurl" : "localhost",
-	"remoteport" : 8888,
+	"remoteport" : 8889,
 	"localport" : 8889,
 	"tester" : {
 		"type": "ARM Cortex-M4",
