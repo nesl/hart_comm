@@ -39,3 +39,6 @@
 
 # matlab storage files
 *.mat
+
+# uploads
+./uploads/*

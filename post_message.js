@@ -25,11 +25,11 @@ var remote = config.remoteurl + ':' + config.remoteport;
 // post status
 request(
 	{
-		uri: "http://" + remote + "/ctrl/status",
+		uri: "http://" + remote + "/tb/msg",
 		method: "POST",
 		form: {
 			id: config.id,
-			status: message
+			msg: message
 		}
 	}, function(error, response, body) {
 		// do nothing with server error or response

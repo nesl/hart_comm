@@ -132,7 +132,7 @@ function announcePresence() {
 	// determine connected devices
 	//console.log("announcing testbed to server...");
 	request({
-		uri: "http://" + remote + "/testbench",
+		uri: "http://" + remote + "/tb/status",
 		method: "POST",
 		form: {
 			testbench: JSON.stringify(config)

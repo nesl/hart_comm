@@ -24,7 +24,7 @@ var config = JSON.parse(fs.readFileSync('config/config_testbench.json', 'utf8'))
 var remote = config.remoteurl + ':' + config.remoteport;
 
 // post waveform file to remote server
-var req = request.post('http://' + remote + '/ctrl/waveform', function (err, resp, body) {
+var req = request.post('http://' + remote + '/tb/waveform', function (err, resp, body) {
   if (err) {
     console.log('Error uploading waveform:');
     console.log(err);
