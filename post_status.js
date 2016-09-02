@@ -25,7 +25,7 @@ var remote = config.remoteurl + ':' + config.remoteport;
 // post status
 request(
 	{
-		uri: "http://" + remote + "/tb/msg",
+		uri: "http://" + remote + "/tb/status",
 		method: "POST",
 		form: {
 			id: config.id,

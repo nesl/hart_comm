@@ -16,6 +16,12 @@ const execSync = require('child_process').execSync;
 var dutlib = require('./jsobjects/dut.js');
 var testbenchlib = require('./jsobjects/testbench.js');
 
+// ===== READ CONFIG FILE =====
+var args = process.argv.slice(2);
+configFile = args[0];
+var config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
+var remote = config.remoteurl + ':' + config.remoteport;
+
 // ===== FIRMWARE STORAGE =====
 var firmware_storage = multer.diskStorage({
 	destination: './uploads/',
@@ -37,9 +43,6 @@ var waveform_storage = multer.diskStorage({
 var upload_waveform = multer({ storage: waveform_storage })
 
 
-// read hardware controller config JSON file
-var config = JSON.parse(fs.readFileSync('config/config_testbench.json', 'utf8'));
-var remote = config.remoteurl + ':' + config.remoteport;
 
 // configure Testbench for periodic advertisements using config file
 var ANNOUNCE_PERIOD = 10*1000;
@@ -132,7 +135,7 @@ function announcePresence() {
 	// determine connected devices
 	//console.log("announcing testbed to server...");
 	request({
-		uri: "http://" + remote + "/tb/status",
+		uri: "http://" + remote + "/tb/summary/",
 		method: "POST",
 		form: {
 			testbench: JSON.stringify(config)

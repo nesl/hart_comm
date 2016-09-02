@@ -1,8 +1,8 @@
 {
 	"type" : "Macbook Pro",
 	"id" : 1,
-	"remoteurl" : "localhost",
-	"remoteport" : 8889,
+	"remoteurl" : "172.17.5.61",
+	"remoteport" : 8000,
 	"localport" : 8889,
 	"tester" : {
 		"type": "ARM Cortex-M4",
@@ -16,7 +16,6 @@
 			"name": "mbed1",
 			"type": "mbed",
 			"id" : 1,
-			"tty" : "/dev/ttyUSB0",
 			"mount" : "/Volumes/MBED1/"
 		}
 	],
