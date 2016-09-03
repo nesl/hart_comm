@@ -16,15 +16,21 @@ http_server = AutoGrader.HTTPServer(config)
 # ========== HTTP CLIENT ==========
 http_client = AutoGrader.HTTPClient(config)
 
+# ========== HARDWARE ENGINE ==========
+hardware = AutoGrader.HardwareEngine(config)
+http_server.addHardware(hardware)
+
 # ========== TASK SCHEDULER ===========
 scheduler = BackgroundScheduler()
+
+# ========== LOGGING SETTINGS ==========
 logging.basicConfig()
 
 # send testbed summaries every 10 seconds
 def send_summary():
     try:
         http_client.send_tb_summary(json.dumps(config))
-    except:
+    except Exception as e:
         print 'remote server is down'
 
 

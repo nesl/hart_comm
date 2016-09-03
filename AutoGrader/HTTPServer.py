@@ -9,9 +9,13 @@ waveform_path = './uploads/waveform.txt'
 class HTTPServer(object):
     app = Klein()
     config = ''
+    hardware = None
 
     def __init__(self, config):
         self.config = config
+
+    def addHardware(self, hw):
+        self.hardware = hw
 
     def start(self):
         self.app.run('0.0.0.0', self.config["localport"])
@@ -67,4 +71,12 @@ class HTTPServer(object):
         f.close()
         print "uploading waveform"
         return "Waveform file uploaded"
+
+    # GET TESTER STATUS
+    @app.route('/tester/status/', methods=['GET'])
+    def tester_status(self, request):
+        if self.hardware is None:
+            return "ERROR_NOHARDWARE"
+        else:
+            return self.hardware.getStatus()
 
