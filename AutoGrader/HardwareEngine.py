@@ -60,11 +60,11 @@ class HardwareEngine(object):
 		self.uart.write(data)
 
 	def reset_dut(self):
-		uart.sendCommand( self.CMD_RESET_DUT )
+		self.uart.sendCommand( self.CMD_RESET_DUT )
 
 	def reset_tester(self):
-		uart.sendCommand( self.CMD_RESET_TESTER )
+		self.uart.sendCommand( self.CMD_RESET_TESTER )
 
 	def enable_anlog_reading(self):
-		uart.sendCommand( self.CMD_ENABLE_ANALOG )
+		self.uart.sendCommand( self.CMD_ENABLE_ANALOG )
 

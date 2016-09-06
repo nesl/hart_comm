@@ -93,5 +93,5 @@ class HTTPServer(object):
         if self.hardware is None:
             return "ERROR_NOHARDWARE"
         else:
-            return self.hardware.getStatus()
+            return self.hardware.get_status()
 
