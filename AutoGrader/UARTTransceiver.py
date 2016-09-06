@@ -5,6 +5,7 @@ import os
 import re
 import serial
 import threading
+import struct
 
 class UARTTransceiver(threading.Thread):
 	# class variables
@@ -32,7 +33,7 @@ class UARTTransceiver(threading.Thread):
 			self.dev.parity=serial.PARITY_NONE
 			self.dev.bytesize=serial.EIGHTBITS
 			self.dev.stopbits=serial.STOPBITS_ONE
-			self.dev.timeout=1
+			self.dev.timeout=None
 			self.dev.writeTimeout=None
 			self.dev.open() 
 
@@ -52,31 +53,27 @@ class UARTTransceiver(threading.Thread):
 			if self.dev_status == 0:
 				continue
 
-			# wait for start byte
-			while self.dev.read() != self.START_DELIM:
+			# wait for 9 bytes (full packet)
+			while self.dev.in_waiting < self.TOTAL_PKT_LEN:
 				pass
 
-			# read in the rest of the packet
+			# read in the full packet
 			rxBuffer = []
-			for i in xrange(TOTAL_PKT_LEN - 2):
+			for i in xrange(self.TOTAL_PKT_LEN):
 				rxBuffer.append( self.dev.read() )
 
-			# check stop byte
-			if self.dev.read() != self.STOP_DELIM:
+			# check start and stop byte
+			if rxBuffer[0] != self.START_DELIM or rxBuffer[8] != self.STOP_DELIM:
 				# bad packet
+				self.flush()
 				continue
 
 			# if we got this far, we have a (potentially) good packet to parse
-			handleData( rxBuffer )
+			self.handleData( ''.join(rxBuffer[1:8]) )
 
-	def handleData(self, data):
+	def handleData(self, data_string):
 		# 1B type, 4B time, 2B val
-		try:
-			[pktType, pktTime, pktVal] = struct.unpack('<BLH')
-		except Exception:
-			# ignoring bad packet
-			pass
-
+		[pktType, pktTime, pktVal] = struct.unpack('<BLH', data_string)
 		self.callback(pktType, pktTime, pktVal)
 
 	def flush(self):
@@ -91,6 +88,7 @@ class UARTTransceiver(threading.Thread):
 		self.dev.write(data)
 
 	def close(self):
+		self.dev_status = 0;
 		self.dev.close()
 
 		

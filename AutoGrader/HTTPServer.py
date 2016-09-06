@@ -42,7 +42,7 @@ class HTTPServer(object):
 		print 'Error: specified DUT not found'
 		return
 
-	call(["mv", firmware_path, mount_path])
+	call(["cp", firmware_path, mount_path])
 
         return "Firmware update for DUT [%d] received" % dut_id
 

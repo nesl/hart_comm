@@ -32,21 +32,31 @@ class HardwareEngine(object):
 
 	def on_data_rx(self, pktType, pktTime, pktVal):
 		# if termination is received, change status and close file
-		if pktType == self.CMD_TERMINATE:
+		if pktType == ord(self.CMD_TERMINATE):
 			self.status = 'IDLE'
-			self.uart.close()
-			self.uart.stop()
+			print 'Test complete.'
 			self.outfile.close()
 
 			# send results file over HTTP
-			self.http_client.send_waveform( self.outfilepath )
+			try:
+				self.http_client.send_waveform( self.outfilepath )
+			except:
+				print 'Unable to upload output to server'
+
 
 			# update status over HTTP
-			self.http_client.send_status( 'IDLE' )
+			try:
+				self.http_client.send_tb_status( 'IDLE' )
+			except:
+				print 'Unable to post status to server'
+
+			# re-open output file for saving test results
+			self.outfile = open(self.outfilepath, 'wb')
+
 			return
 
 		# otherwise, we'll just write the outputs to a file
-		self.outfile.writeline( '%d, %d, %d\n' % (pktType, pktTime, pktVal) )
+		self.outfile.write( '%d, %d, %d\n' % (pktType, pktTime, pktVal) )
 
 	def get_status(self):
 		return self.status
@@ -54,9 +64,10 @@ class HardwareEngine(object):
 	def start_test(self, wavefile):
 		# set status to busy
 		self.status = 'TESTING'
+		print 'Test starting...'
 		# open waveform file
-		wavfile = open(wavfile, 'rb')
-		data = wavfile.read()
+		wfile = open(wavefile, 'rb')
+		data = wfile.read()
 		self.uart.write(data)
 
 	def reset_dut(self):

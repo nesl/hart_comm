@@ -16,7 +16,7 @@
 			"name": "mbed1",
 			"type": "mbed",
 			"id" : 1,
-			"mount" : "/media/embed-autograder/DIS_F407VG/"
+			"mount" : "/media/embed-autograder/MBED1/"
 		}
 	],
 	"wires" : [
