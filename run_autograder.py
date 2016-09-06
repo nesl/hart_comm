@@ -19,6 +19,7 @@ http_client = AutoGrader.HTTPClient(config)
 # ========== HARDWARE ENGINE ==========
 hardware = AutoGrader.HardwareEngine(config)
 http_server.addHardware(hardware)
+hardware.add_http_client(http_client)
 
 # ========== TASK SCHEDULER ===========
 scheduler = BackgroundScheduler()
