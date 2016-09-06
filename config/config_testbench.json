@@ -1,22 +1,22 @@
 {
-	"type" : "Macbook Pro",
+	"type" : "Intel NUC",
 	"id" : 1,
-	"remotehost" : "localhost",
+	"remotehost" : "172.17.5.63",
 	"remoteport" : 8000,
 	"localport" : 8889,
 	"tester" : {
 		"type": "ARM Cortex-M4",
-		"path": "/dev/ttyUSB1",
-		"tickrate": 5e-6,
-		"maxevents": 1000,
-		"timeresolution": 0.1e-6
+		"path": "/dev/ttyUSB0",
+		"tickrate": 10e-6,
+		"maxevents": 7000,
+		"timeresolution": 10e-6
 	},
 	"duts" : [
 		{
 			"name": "mbed1",
 			"type": "mbed",
 			"id" : 1,
-			"mount" : "/Volumes/MBED1/"
+			"mount" : "/media/embed-autograder/DIS_F407VG/"
 		}
 	],
 	"wires" : [

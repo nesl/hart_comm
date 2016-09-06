@@ -1,5 +1,6 @@
 import json
 from klein import Klein
+from subprocess import call
 
 # firmware upload path
 firmware_path = './uploads/dut_firmware.bin'
@@ -29,6 +30,20 @@ class HTTPServer(object):
         f.write( dut_firmware )
         f.close()
         print "programming DUT ", dut_id
+
+	# get mound path for dut
+	mount_path = ''
+	for d in self.config["duts"]:
+		if int(d["id"]) == dut_id:
+			mount_path = d["mount"] 
+			break
+
+	if mount_path == '':
+		print 'Error: specified DUT not found'
+		return
+
+	call(["mv", firmware_path, mount_path])
+
         return "Firmware update for DUT [%d] received" % dut_id
 
     # DUT RESET
@@ -37,7 +52,7 @@ class HTTPServer(object):
         dut_id = int(request.args.get('dut', [-1])[0])
 
         # reset DUT
-        # TODO: !!!
+	self.hardware.reset_dut()
 
         request.setHeader('Content-Type', 'text/plain')
         return "DUT [%d] reset request received" % dut_id
@@ -47,7 +62,7 @@ class HTTPServer(object):
     def tester_reset(self, request):
 
         # reset tester
-        # TODO: !!!
+	self.hardware.reset_tester()
 
         request.setHeader('Content-Type', 'text/plain')
         return "Tester reset request received"
@@ -57,12 +72,12 @@ class HTTPServer(object):
     def tester_start(self, request):
 
         # start testing
-        # TODO: !!!
+	self.hardware.start_test(waveform_path)
 
         request.setHeader('Content-Type', 'text/plain')
         return "Tester start request received"
 
-    # DUT FIRMWARE UPDATE
+    # WAVEFORM UPLOAD
     @app.route('/tester/waveform/', methods=['POST'])
     def tester_waveform(self, request):
         waveform = request.args.get('waveform', [-1])[0]

@@ -4,7 +4,6 @@
 import os
 import re
 import serial
-import numpy as np
 import threading
 
 class UARTTransceiver(threading.Thread):

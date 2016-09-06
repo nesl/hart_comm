@@ -55,7 +55,7 @@ class HardwareEngine(object):
 		# set status to busy
 		self.status = 'TESTING'
 		# open waveform file
-		wavfile = open('uploads/waveform.txt', 'rb')
+		wavfile = open(wavfile, 'rb')
 		data = wavfile.read()
 		self.uart.write(data)
 

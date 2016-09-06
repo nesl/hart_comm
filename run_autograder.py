@@ -1,6 +1,7 @@
 # ========== IMPORTS ==========
 import json
 import sys
+import signal
 from apscheduler.schedulers.background import BackgroundScheduler
 import logging
 import AutoGrader
@@ -22,7 +23,7 @@ http_server.addHardware(hardware)
 hardware.add_http_client(http_client)
 
 # ========== TASK SCHEDULER ===========
-scheduler = BackgroundScheduler()
+scheduler = BackgroundScheduler( standalone=True )
 
 # ========== LOGGING SETTINGS ==========
 logging.basicConfig()
@@ -37,7 +38,11 @@ def send_summary():
 
 # schedule periodic jobs
 scheduler.add_job(send_summary, 'interval', seconds=10)
-scheduler.start()
+try:
+	scheduler.start()
+except KeyboardInterrupt:
+	print 'Keyboard Interrupt - shutting down APScheduler'
+	# TODO: this isn't working...
 
 # start server
 http_server.start()
