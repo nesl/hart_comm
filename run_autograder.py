@@ -26,7 +26,7 @@ scheduler = BackgroundScheduler()
 # ========== LOGGING SETTINGS ==========
 logging.basicConfig()
 
-# send testbed summaries every 10 seconds
+# send testbed summary
 def send_summary():
     try:
         http_client.send_tb_summary(json.dumps(config))
