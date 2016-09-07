@@ -32,6 +32,7 @@ class HardwareEngine(object):
 
 	def on_data_rx(self, pktType, pktTime, pktVal):
 		# if termination is received, change status and close file
+		print 'type: %d, time: %d, val: %d' % (pktType, pktTime, pktVal)
 		if pktType == ord(self.CMD_TERMINATE):
 			self.status = 'IDLE'
 			print 'Test complete.'
