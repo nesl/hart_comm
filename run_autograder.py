@@ -38,11 +38,7 @@ def send_summary():
 
 # schedule periodic jobs
 scheduler.add_job(send_summary, 'interval', seconds=10)
-try:
-	scheduler.start()
-except KeyboardInterrupt:
-	print('Keyboard Interrupt - shutting down APScheduler')
-	# TODO: this isn't working...
+scheduler.start()
 
 # start server
 http_server.start()

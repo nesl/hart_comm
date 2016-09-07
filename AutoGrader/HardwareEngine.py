@@ -25,7 +25,7 @@ class HardwareEngine(object):
 		self.uart = UARTTransceiver(self.baudrate, self.config["tester"]["path"], self.on_data_rx)
 		self.uart.start()
 		# open output file for saving test results
-		self.outfile = open(self.outfilepath, 'wb')
+		self.outfile = open(self.outfilepath, 'w')
 
 	def add_http_client(self, client):
 		self.http_client = client
@@ -58,7 +58,7 @@ class HardwareEngine(object):
 				print('Unable to post status to server')
 
 			# re-open output file for saving test results
-			self.outfile = open(self.outfilepath, 'wb')
+			self.outfile = open(self.outfilepath, 'w')
 
 			return
 

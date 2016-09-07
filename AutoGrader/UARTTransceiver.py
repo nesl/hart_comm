@@ -58,9 +58,9 @@ class UARTTransceiver(threading.Thread):
 			# if we got this far, we have a (potentially) good packet to parse
 			self.handleData( ''.join(rxBuffer[1:8]) )
 
-	def handleData(self, data_string):
+	def handleData(self, data_str):
 		# 1B type, 4B time, 2B val
-		[pktType, pktTime, pktVal] = struct.unpack('<BLH', data_string)
+		[pktType, pktTime, pktVal] = struct.unpack('<BLH', data_str)
 		self.callback(pktType, pktTime, pktVal)
 
 	def flush(self):
