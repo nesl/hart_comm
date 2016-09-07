@@ -37,6 +37,9 @@ class HardwareEngine(object):
 			print 'Test complete.'
 			self.outfile.close()
 
+			# stop listening to UART
+			self.uart.stopListening()
+
 			# send results file over HTTP
 			try:
 				self.http_client.send_waveform( self.outfilepath )
@@ -65,6 +68,8 @@ class HardwareEngine(object):
 		# set status to busy
 		self.status = 'TESTING'
 		print 'Test starting...'
+		# start listening on UART
+		self.uart.startListening()
 		# open waveform file
 		wfile = open(wavefile, 'rb')
 		data = wfile.read()

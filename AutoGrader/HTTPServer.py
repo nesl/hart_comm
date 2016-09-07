@@ -42,7 +42,7 @@ class HTTPServer(object):
 		print 'Error: specified DUT not found'
 		return
 
-	call(["cp", firmware_path, mount_path])
+        call(["cp", firmware_path, mount_path])
 
         return "Firmware update for DUT [%d] received" % dut_id
 
@@ -52,7 +52,7 @@ class HTTPServer(object):
         dut_id = int(request.args.get('dut', [-1])[0])
 
         # reset DUT
-	self.hardware.reset_dut()
+        self.hardware.reset_dut()
 
         request.setHeader('Content-Type', 'text/plain')
         return "DUT [%d] reset request received" % dut_id
@@ -62,7 +62,7 @@ class HTTPServer(object):
     def tester_reset(self, request):
 
         # reset tester
-	self.hardware.reset_tester()
+        self.hardware.reset_tester()
 
         request.setHeader('Content-Type', 'text/plain')
         return "Tester reset request received"
@@ -72,7 +72,7 @@ class HTTPServer(object):
     def tester_start(self, request):
 
         # start testing
-	self.hardware.start_test(waveform_path)
+        self.hardware.start_test(waveform_path)
 
         request.setHeader('Content-Type', 'text/plain')
         return "Tester start request received"

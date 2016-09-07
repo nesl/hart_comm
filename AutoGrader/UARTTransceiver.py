@@ -17,6 +17,7 @@ class UARTTransceiver(threading.Thread):
 	START_DELIM = 'S'
 	STOP_DELIM = 'E'
 	TOTAL_PKT_LEN = 9
+	listening = False
 
 	def __init__(self, baud, path, callback):
 		threading.Thread.__init__(self, name="uartserial")
@@ -69,7 +70,8 @@ class UARTTransceiver(threading.Thread):
 				continue
 
 			# if we got this far, we have a (potentially) good packet to parse
-			self.handleData( ''.join(rxBuffer[1:8]) )
+			if self.listening:
+				self.handleData( ''.join(rxBuffer[1:8]) )
 
 	def handleData(self, data_string):
 		# 1B type, 4B time, 2B val
@@ -86,6 +88,12 @@ class UARTTransceiver(threading.Thread):
 
 	def write(self, data):
 		self.dev.write(data)
+
+	def startListening(self):
+		self.listening = True
+
+	def stopListening(self):
+		self.listening = False
 
 	def close(self):
 		self.dev_status = 0;
