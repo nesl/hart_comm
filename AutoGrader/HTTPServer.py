@@ -31,23 +31,23 @@ class HTTPServer(object):
         f.close()
         print "programming DUT ", dut_id
 
-	# get mound path for dut
-	mount_path = ''
-	for d in self.config["duts"]:
-		if int(d["id"]) == dut_id:
-			mount_path = d["mount"] 
-			break
+        # get mound path for dut
+        mount_path = ''
+        for d in self.config["duts"]:
+            if int(d["id"]) == dut_id:
+                mount_path = d["mount"] 
+                break
 
-	if mount_path == '':
-		print 'Error: specified DUT not found'
-		return
+        if mount_path == '':
+            print 'Error: specified DUT not found'
+            return
 
         call(["cp", firmware_path, mount_path])
-	
-	# wait for it to copy and then reset the DUT
-	time.sleep(2.5)
-	self.hardware.reset_dut()
-	time.sleep(0.20)
+
+        # wait for it to copy and then reset the DUT
+        time.sleep(2.5)
+        self.hardware.reset_dut()
+        time.sleep(0.20)
 
         return "Firmware update for DUT [%d] received" % dut_id
 
@@ -55,11 +55,11 @@ class HTTPServer(object):
     @app.route('/dut/reset/', methods=['POST'])
     def dut_reset(self, request):
         dut_id = int(request.args.get('dut', [-1])[0])
-	print 'resetting DUT [%d]' % dut_id
+        print 'resetting DUT [%d]' % dut_id
 
         # reset DUT
         self.hardware.reset_dut()
-	time.sleep(0.20)
+        time.sleep(0.20)
 
         request.setHeader('Content-Type', 'text/plain')
         return "DUT [%d] reset request received" % dut_id
@@ -67,11 +67,11 @@ class HTTPServer(object):
     # HARDWARE ENGINE RESET
     @app.route('/tester/reset/', methods=['POST'])
     def tester_reset(self, request):
-	print 'resetting tester'
+        print 'resetting tester'
 
         # reset tester
         self.hardware.reset_tester()
-	time.sleep(0.20)
+        time.sleep(0.20)
 
         request.setHeader('Content-Type', 'text/plain')
         return "Tester reset request received"
@@ -79,11 +79,11 @@ class HTTPServer(object):
     # HARDWARE ENGINE START TEST
     @app.route('/tester/start/', methods=['POST'])
     def tester_start(self, request):
-	print 'starting test'
+        print 'starting test'
 
         # start testing
         self.hardware.start_test(waveform_path)
-	time.sleep(0.20)
+        time.sleep(0.20)
 
         request.setHeader('Content-Type', 'text/plain')
         return "Tester start request received"

@@ -3,9 +3,23 @@
 2016-09-06 22:16:32-0700 [-] Starting factory <twisted.web.server.Site instance at 0x7f7d42245b90>
 2016-09-06 22:16:45-0700 [-] Tester status requested
 2016-09-06 22:16:45-0700 [-] "172.17.5.63" - - [07/Sep/2016:05:16:45 +0000] "GET /tester/status/ HTTP/1.1" 200 4 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.84 Safari/537.36"
-2016-09-06 22:17:04-0700 [-] Tester status requested
-2016-09-06 22:17:04-0700 [-] "172.17.5.253" - - [07/Sep/2016:05:17:04 +0000] "GET /tester/status/ HTTP/1.1" 200 4 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36"
-2016-09-06 22:17:12-0700 [-] Received SIGINT, shutting down.
-2016-09-06 22:17:12-0700 [twisted.web.server.Site] (TCP Port 8889 Closed)
-2016-09-06 22:17:12-0700 [-] Stopping factory <twisted.web.server.Site instance at 0x7f7d42245b90>
-2016-09-06 22:17:12-0700 [-] Main loop terminated.
+2016-09-2016-09-06 23:22:31-0700 [-] Traceback (most recent call last):
+2016-09-06 23:22:31-0700 [-]   File "/usr/lib/python2.7/logging/__init__.py", line 882, in emit
+2016-09-06 23:22:31-0700 [-]     stream.write(fs % msg)
+2016-09-06 23:22:31-0700 [-] IOError: [Errno 5] Input/output error
+2016-09-06 23:22:31-0700 [-] Logged from file base.py, line 120
+2016-09-06 23:38:14-0700 [-] Exception in thread uartserial:
+2016-09-06 23:38:14-0700 [-] Traceback (most recent call last):
+2016-09-06 23:38:14-0700 [-]   File "/usr/lib/python2.7/threading.py", line 801, in __bootstrap_inner
+2016-09-06 23:38:14-0700 [-]     self.run()
+2016-09-06 23:38:14-0700 [-]   File "/home/embed-autograder/Workspace/autograder/communicatio2016-09-06 23:38:14-0700 [-] Exception in thread uartserial:
+2016-09-06 23:38:14-0700 [-] Traceback (most recent call last):
+2016-09-06 23:38:14-0700 [-]   File "/usr/lib/python2.7/threading.py", line 801, in __bootstrap_inner
+2016-09-06 23:38:14-0700 [-]     self.run()
+2016-09-06 23:38:14-0700 [-]   File "/home/embed-autograder/Workspace/autograder/communication/AutoGrader/UARTTransceiver.py", line 64, in run
+2016-09-06 23:38:14-0700 [-]     rxBuffer.append( self.dev.read() )
+2016-09-06 23:38:14-0700 [-]   File "/home/embed-autograder/.local/lib/python2.7/site-packages/serial/serialposix.py", line 468, in read
+2016-09-06 23:38:14-0700 [-]     'device reports readiness to read but returned no data '
+2016-09-06 23:38:14-0700 [-] SerialException: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+2016-09-06 23:38:14-0700 [-] 
+2016-09-06 23:38:14-0700 [-] Received SIGTERM, shutting down.
