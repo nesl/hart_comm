@@ -12,7 +12,6 @@ class UARTTransceiver(threading.Thread):
 	baud_rate = 115200
 	dev_path = ''
 	dev = ''
-	dev_open = False
 	callback = ''
 	START_DELIM = 'S'
 	STOP_DELIM = 'E'
@@ -24,27 +23,21 @@ class UARTTransceiver(threading.Thread):
 		self.baud_rate = baud
 		self.dev_path = path
 		self.callback = callback
-		
-		if self.dev_path != '':
-			# now open this device for reading
-			self.open()
-			# flush the serial 
-			self.flush()
-		else:
-			raise Exception('Could not open UART device')
+		# flush the serial 
+		self.dev = serial.Serial()
 
 	def __del__(self):
-		if self.dev_status == 1:
+		if self.dev.is_open:
 			self.dev.close()
 
 	def run(self):
 		while True:
 			# continue immediately if serial isn't ready
-			if self.dev_open == False:
+			if not self.dev.is_open:
 				continue
 
 			# wait for 9 bytes (full packet)
-			while self.dev.in_waiting < self.TOTAL_PKT_LEN:
+			while self.dev.in_waiting() < self.TOTAL_PKT_LEN:
 				pass
 
 			# read in the full packet
@@ -71,27 +64,34 @@ class UARTTransceiver(threading.Thread):
 		self.dev.flush()
 
 	def sendCommand(self, cmd):
-		if self.dev_open == False:
+		was_open = self.dev.is_open
+		if not was_open:
 			self.open()
+
+		print self.dev.is_open
 
 		payload = self.START_DELIM + cmd + "000000" + self.STOP_DELIM
 		self.dev.write(payload)
 
-		if self.dev_open == False:
+		if not was_open:
 			self.close()
 
 	def write(self, data):
-		if self.dev_open == False:
+		was_open = self.dev.is_open
+		if not was_open:
 			self.open()
 
 		self.dev.write(data)
 
-		if self.dev_open == False:
+		if not was_open:
 			self.close()
 
 	def close(self):
-		self.dev_open = False;
-		self.dev.close()
+		try:
+			self.dev.flush()
+			self.dev.close()
+		except:
+			print 'UART device unable to close'
 
 	def open(self):
 		self.dev = serial.Serial()
@@ -102,8 +102,10 @@ class UARTTransceiver(threading.Thread):
 		self.dev.stopbits=serial.STOPBITS_ONE
 		self.dev.timeout=None
 		self.dev.writeTimeout=None
-		self.dev.open() 
-		self.dev_open = True
+		try:
+			self.dev.open() 
+		except:
+			print 'UART device unable to open'
 
 		
 
