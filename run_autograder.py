@@ -9,7 +9,7 @@ import AutoGrader
 # ========== CONFIG FILE ==========
 config_file = sys.argv[1]
 config = json.load(open(config_file))
-print '===== AutoGrader Testbed [%d] ===== ' % config["id"]
+print('===== AutoGrader Testbed [%d] ===== ' % config["id"])
 
 # ========== HTTP SERVER ==========
 http_server = AutoGrader.HTTPServer(config)
@@ -33,7 +33,7 @@ def send_summary():
     try:
         http_client.send_tb_summary(json.dumps(config))
     except Exception as e:
-        print 'remote server is down'
+        print('remote server is down')
 
 
 # schedule periodic jobs
@@ -41,7 +41,7 @@ scheduler.add_job(send_summary, 'interval', seconds=10)
 try:
 	scheduler.start()
 except KeyboardInterrupt:
-	print 'Keyboard Interrupt - shutting down APScheduler'
+	print('Keyboard Interrupt - shutting down APScheduler')
 	# TODO: this isn't working...
 
 # start server

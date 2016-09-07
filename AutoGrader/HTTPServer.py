@@ -29,7 +29,7 @@ class HTTPServer(object):
         f = open( firmware_path, 'w' )
         f.write( dut_firmware )
         f.close()
-        print "programming DUT ", dut_id
+        print("programming DUT ", dut_id)
 
         # get mound path for dut
         mount_path = ''
@@ -39,7 +39,7 @@ class HTTPServer(object):
                 break
 
         if mount_path == '':
-            print 'Error: specified DUT not found'
+            print('Error: specified DUT not found')
             return
 
         call(["cp", firmware_path, mount_path])
@@ -55,7 +55,7 @@ class HTTPServer(object):
     @app.route('/dut/reset/', methods=['POST'])
     def dut_reset(self, request):
         dut_id = int(request.args.get('dut', [-1])[0])
-        print 'resetting DUT [%d]' % dut_id
+        print('resetting DUT [%d]' % dut_id)
 
         # reset DUT
         self.hardware.reset_dut()
@@ -67,7 +67,7 @@ class HTTPServer(object):
     # HARDWARE ENGINE RESET
     @app.route('/tester/reset/', methods=['POST'])
     def tester_reset(self, request):
-        print 'resetting tester'
+        print('resetting tester')
 
         # reset tester
         self.hardware.reset_tester()
@@ -79,7 +79,7 @@ class HTTPServer(object):
     # HARDWARE ENGINE START TEST
     @app.route('/tester/start/', methods=['POST'])
     def tester_start(self, request):
-        print 'starting test'
+        print('starting test')
 
         # start testing
         self.hardware.start_test(waveform_path)
@@ -95,7 +95,7 @@ class HTTPServer(object):
         f = open( waveform_path, 'w' )
         f.write( waveform )
         f.close()
-        print "uploading waveform"
+        print("uploading waveform")
         return "Waveform file uploaded"
 
     # GET TESTER STATUS
@@ -104,6 +104,6 @@ class HTTPServer(object):
         if self.hardware is None:
             return "ERROR_NOHARDWARE"
         else:
-            print 'Tester status requested'
+            print('Tester status requested')
             return self.hardware.get_status()
 

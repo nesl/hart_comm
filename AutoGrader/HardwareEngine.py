@@ -3,7 +3,7 @@ import serial
 import string
 import time
 import threading
-from UARTTransceiver import *
+from .UARTTransceiver import *
 
 class HardwareEngine(object):
 	status = 'IDLE'
@@ -32,29 +32,30 @@ class HardwareEngine(object):
 
 	def on_data_rx(self, pktType, pktTime, pktVal):
 		# if termination is received, change status and close file
-		#print 'type: %d, time: %d, val: %d' % (pktType, pktTime, pktVal)
+		print('type: %d, time: %d, val: %d' % (pktType, pktTime, pktVal))
 		if pktType == ord(self.CMD_TERMINATE):
 			self.status = 'IDLE'
-			print 'Test complete.'
+			print('Test complete.')
 			self.outfile.close()
 
 			# stop listening to UART
+			self.uart.stopListening()
 			self.uart.close()
 
 			# send results file over HTTP
 			try:
 				self.http_client.send_waveform( self.outfilepath )
-				print 'Waveform file uploaded'
+				print('Waveform file uploaded')
 			except:
-				print 'Unable to upload output to server'
+				print('Unable to upload output to server')
 
 
 			# update status over HTTP
 			try:
 				self.http_client.send_tb_status( 'IDLE' )
-				print 'IDLE status sent'
+				print('IDLE status sent')
 			except:
-				print 'Unable to post status to server'
+				print('Unable to post status to server')
 
 			# re-open output file for saving test results
 			self.outfile = open(self.outfilepath, 'wb')
@@ -72,6 +73,7 @@ class HardwareEngine(object):
 		self.status = 'TESTING'
 		# start listening on UART
 		self.uart.open()
+		self.uart.startListening()		
 		# open waveform file
 		wfile = open(wavefile, 'rb')
 		data = wfile.read()

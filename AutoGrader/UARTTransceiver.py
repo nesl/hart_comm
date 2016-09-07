@@ -16,6 +16,7 @@ class UARTTransceiver(threading.Thread):
 	START_DELIM = 'S'
 	STOP_DELIM = 'E'
 	TOTAL_PKT_LEN = 9
+	listening = False
 
 	def __init__(self, baud, path, callback):
 		threading.Thread.__init__(self, name="uartserial")
@@ -32,17 +33,20 @@ class UARTTransceiver(threading.Thread):
 
 	def run(self):
 		while True:
+			if not self.listening:
+				continue
+
 			# continue immediately if serial isn't ready
 			if not self.dev.is_open:
 				continue
 
 			# wait for 9 bytes (full packet)
-			while self.dev.in_waiting() < self.TOTAL_PKT_LEN:
+			while self.dev.inWaiting() < self.TOTAL_PKT_LEN:
 				pass
 
 			# read in the full packet
 			rxBuffer = []
-			for i in xrange(self.TOTAL_PKT_LEN):
+			for i in range(self.TOTAL_PKT_LEN):
 				rxBuffer.append( self.dev.read() )
 
 			# check start and stop byte
@@ -68,10 +72,8 @@ class UARTTransceiver(threading.Thread):
 		if not was_open:
 			self.open()
 
-		print self.dev.is_open
-
 		payload = self.START_DELIM + cmd + "000000" + self.STOP_DELIM
-		self.dev.write(payload)
+		self.dev.write(payload.encode())
 
 		if not was_open:
 			self.close()
@@ -91,7 +93,7 @@ class UARTTransceiver(threading.Thread):
 			self.dev.flush()
 			self.dev.close()
 		except:
-			print 'UART device unable to close'
+			print('UART device unable to close')
 
 	def open(self):
 		self.dev = serial.Serial()
@@ -105,12 +107,13 @@ class UARTTransceiver(threading.Thread):
 		try:
 			self.dev.open() 
 		except:
-			print 'UART device unable to open'
+			print('UART device unable to open')
 
-		
+	def startListening(self):
+		self.listening = True
 
-
-	
+	def stopListening(self):
+		self.listening = False
 
 
 
