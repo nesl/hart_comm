@@ -32,14 +32,14 @@ class HardwareEngine(object):
 
 	def on_data_rx(self, pktType, pktTime, pktVal):
 		# if termination is received, change status and close file
-		print 'type: %d, time: %d, val: %d' % (pktType, pktTime, pktVal)
+		#print 'type: %d, time: %d, val: %d' % (pktType, pktTime, pktVal)
 		if pktType == ord(self.CMD_TERMINATE):
 			self.status = 'IDLE'
 			print 'Test complete.'
 			self.outfile.close()
 
 			# stop listening to UART
-			self.uart.stopListening()
+			self.uart.close()
 
 			# send results file over HTTP
 			try:
@@ -71,7 +71,7 @@ class HardwareEngine(object):
 		# set status to busy
 		self.status = 'TESTING'
 		# start listening on UART
-		self.uart.startListening()
+		self.uart.open()
 		# open waveform file
 		wfile = open(wavefile, 'rb')
 		data = wfile.read()

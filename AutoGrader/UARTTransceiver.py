@@ -12,12 +12,11 @@ class UARTTransceiver(threading.Thread):
 	baud_rate = 115200
 	dev_path = ''
 	dev = ''
-	dev_status = 0
+	dev_open = False
 	callback = ''
 	START_DELIM = 'S'
 	STOP_DELIM = 'E'
 	TOTAL_PKT_LEN = 9
-	listening = False
 
 	def __init__(self, baud, path, callback):
 		threading.Thread.__init__(self, name="uartserial")
@@ -28,17 +27,7 @@ class UARTTransceiver(threading.Thread):
 		
 		if self.dev_path != '':
 			# now open this device for reading
-			self.dev = serial.Serial()
-			self.dev.port = self.dev_path    
-			self.dev.baudrate = self.baud_rate    
-			self.dev.parity=serial.PARITY_NONE
-			self.dev.bytesize=serial.EIGHTBITS
-			self.dev.stopbits=serial.STOPBITS_ONE
-			self.dev.timeout=None
-			self.dev.writeTimeout=None
-			self.dev.open() 
-
-			self.dev_status = 1
+			self.open()
 			# flush the serial 
 			self.flush()
 		else:
@@ -51,7 +40,7 @@ class UARTTransceiver(threading.Thread):
 	def run(self):
 		while True:
 			# continue immediately if serial isn't ready
-			if self.dev_status == 0:
+			if self.dev_open == False:
 				continue
 
 			# wait for 9 bytes (full packet)
@@ -70,8 +59,7 @@ class UARTTransceiver(threading.Thread):
 				continue
 
 			# if we got this far, we have a (potentially) good packet to parse
-			if self.listening:
-				self.handleData( ''.join(rxBuffer[1:8]) )
+			self.handleData( ''.join(rxBuffer[1:8]) )
 
 	def handleData(self, data_string):
 		# 1B type, 4B time, 2B val
@@ -83,21 +71,39 @@ class UARTTransceiver(threading.Thread):
 		self.dev.flush()
 
 	def sendCommand(self, cmd):
+		if self.dev_open == False:
+			self.open()
+
 		payload = self.START_DELIM + cmd + "000000" + self.STOP_DELIM
 		self.dev.write(payload)
 
+		if self.dev_open == False:
+			self.close()
+
 	def write(self, data):
+		if self.dev_open == False:
+			self.open()
+
 		self.dev.write(data)
 
-	def startListening(self):
-		self.listening = True
-
-	def stopListening(self):
-		self.listening = False
+		if self.dev_open == False:
+			self.close()
 
 	def close(self):
-		self.dev_status = 0;
+		self.dev_open = False;
 		self.dev.close()
+
+	def open(self):
+		self.dev = serial.Serial()
+		self.dev.port = self.dev_path    
+		self.dev.baudrate = self.baud_rate    
+		self.dev.parity=serial.PARITY_NONE
+		self.dev.bytesize=serial.EIGHTBITS
+		self.dev.stopbits=serial.STOPBITS_ONE
+		self.dev.timeout=None
+		self.dev.writeTimeout=None
+		self.dev.open() 
+		self.dev_open = True
 
 		
 
