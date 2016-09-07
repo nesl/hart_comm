@@ -43,6 +43,7 @@ class HardwareEngine(object):
 			# send results file over HTTP
 			try:
 				self.http_client.send_waveform( self.outfilepath )
+				print 'Waveform file uploaded'
 			except:
 				print 'Unable to upload output to server'
 
@@ -50,6 +51,7 @@ class HardwareEngine(object):
 			# update status over HTTP
 			try:
 				self.http_client.send_tb_status( 'IDLE' )
+				print 'IDLE status sent'
 			except:
 				print 'Unable to post status to server'
 
@@ -67,7 +69,6 @@ class HardwareEngine(object):
 	def start_test(self, wavefile):
 		# set status to busy
 		self.status = 'TESTING'
-		print 'Test starting...'
 		# start listening on UART
 		self.uart.startListening()
 		# open waveform file

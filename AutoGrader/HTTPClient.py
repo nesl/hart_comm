@@ -18,7 +18,7 @@ class HTTPClient(object):
 			headers={'content-type': "application/x-www-form-urlencoded"}, timeout=1.0)
 
 	def send_tb_status(self, status):
-		r = requests.post( self.remote_http+'/tb/status/', data={'status': status}, \
+		r = requests.post( self.remote_http+'/tb/status/', data={'id':self.config["id"], 'status': status}, \
 			headers={'content-type': "application/x-www-form-urlencoded"}, timeout=1.0)
 
 	def send_waveform(self, fpath):

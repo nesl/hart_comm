@@ -6,7 +6,6 @@ from subprocess import call
 firmware_path = './uploads/dut_firmware.bin'
 waveform_path = './uploads/waveform.txt'
 
-
 class HTTPServer(object):
     app = Klein()
     config = ''
@@ -19,7 +18,7 @@ class HTTPServer(object):
         self.hardware = hw
 
     def start(self):
-        self.app.run('0.0.0.0', self.config["localport"])
+        self.app.run('0.0.0.0', self.config["localport"] )
 
     # DUT FIRMWARE UPDATE
     @app.route('/dut/program/', methods=['POST'])
@@ -50,6 +49,7 @@ class HTTPServer(object):
     @app.route('/dut/reset/', methods=['POST'])
     def dut_reset(self, request):
         dut_id = int(request.args.get('dut', [-1])[0])
+	print 'resetting DUT [%d]' % dut_id
 
         # reset DUT
         self.hardware.reset_dut()
@@ -60,6 +60,7 @@ class HTTPServer(object):
     # HARDWARE ENGINE RESET
     @app.route('/tester/reset/', methods=['POST'])
     def tester_reset(self, request):
+	print 'resetting tester'
 
         # reset tester
         self.hardware.reset_tester()
@@ -70,6 +71,7 @@ class HTTPServer(object):
     # HARDWARE ENGINE START TEST
     @app.route('/tester/start/', methods=['POST'])
     def tester_start(self, request):
+	print 'starting test'
 
         # start testing
         self.hardware.start_test(waveform_path)
@@ -93,5 +95,6 @@ class HTTPServer(object):
         if self.hardware is None:
             return "ERROR_NOHARDWARE"
         else:
+            print 'Tester status requested'
             return self.hardware.get_status()
 
