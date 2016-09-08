@@ -59,7 +59,7 @@ class HTTPServer(object):
 
         # reset DUT
         self.hardware.reset_dut()
-        time.sleep(0.20)
+        time.sleep(0.2)
 
         request.setHeader('Content-Type', 'text/plain')
         return "DUT [%d] reset request received" % dut_id
@@ -82,6 +82,7 @@ class HTTPServer(object):
         print('starting test')
 
         # start testing
+        time.sleep(2.0)
         self.hardware.start_test(waveform_path)
         time.sleep(0.20)
 
