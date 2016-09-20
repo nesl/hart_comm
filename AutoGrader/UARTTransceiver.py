@@ -13,8 +13,8 @@ class UARTTransceiver(threading.Thread):
     dev_path = ''
     dev = ''
     callback = ''
-    START_DELIM = 'S'
-    STOP_DELIM = 'E'
+    START_DELIM = b'S'
+    STOP_DELIM = b'E'
     TOTAL_PKT_LEN = 9
     listening = False
 
@@ -33,35 +33,43 @@ class UARTTransceiver(threading.Thread):
 
     def run(self):
         while True:
+            #TODO: what's this?
             if not self.listening:
                 continue
 
+            #TODO: what's this?
             # continue immediately if serial isn't ready
             if not self.dev.is_open:
                 continue
 
+            #TODO: what's this?
             # wait for 9 bytes (full packet)
             while self.dev.inWaiting() < self.TOTAL_PKT_LEN:
                 pass
 
             # read in the full packet
-            rxBuffer = []
+            rxBuffer = b''
             for i in range(self.TOTAL_PKT_LEN):
-                rxBuffer.append( self.dev.read() )
+                rxBuffer += self.dev.read()
 
             # check start and stop byte
-            if rxBuffer[0] != self.START_DELIM or rxBuffer[8] != self.STOP_DELIM:
+            # (The reason that we have to use bytes[0:1] is that var[0] returns an int)
+            if rxBuffer[0:1] != self.START_DELIM or rxBuffer[8:9] != self.STOP_DELIM:
                 # bad packet
                 self.flush()
                 continue
 
             # if we got this far, we have a (potentially) good packet to parse
-            self.handleData( ''.join(rxBuffer[1:8]) )
+            self.handleData(rxBuffer[1:8])
 
-    def handleData(self, data_str):
+    def handleData(self, binary):
         # 1B type, 4B time, 2B val
-        [pktType, pktTime, pktVal] = struct.unpack('<BLH', data_str)
-        self.callback(pktType, pktTime, pktVal)
+        [pktType, pktTime, pktVal] = struct.unpack('<cLH', data_str)
+        try:
+            pktType = pktType.decode('ascii')
+            self.callback(pktType, pktTime, pktVal)
+        except:
+            pass
 
     def flush(self):
         self.dev.flushInput()
@@ -72,7 +80,7 @@ class UARTTransceiver(threading.Thread):
         if not was_open:
             self.open()
 
-        payload = self.START_DELIM + cmd + "000000" + self.STOP_DELIM
+        payload = self.START_DELIM + cmd.encode() + b'\x00\x00\x00\x00\x00\x00' + self.STOP_DELIM
         self.dev.write(payload.encode())
 
         if not was_open:
