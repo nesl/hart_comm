@@ -61,7 +61,7 @@ class HTTPServer(object):
                 mount_path = d["mount"] 
                 break
 
-        if mount_path == '':
+        if not mount_path:
             print('Error: specified DUT not found')
             return
 
@@ -76,6 +76,7 @@ class HTTPServer(object):
         shutil.copyfile(firmware_path, mount_path)
 
         # wait for it to copy and then reset the DUT
+		#TODO: check why do we need these delay
         time.sleep(2.5)
         self.hardware.reset_dut()
         time.sleep(0.20)
