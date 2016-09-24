@@ -1,4 +1,3 @@
-# ========== IMPORTS ==========
 import serial
 import string
 import time

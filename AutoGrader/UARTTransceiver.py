@@ -89,7 +89,7 @@ class UARTTransceiver(threading.Thread):
     def write(self, data):
         if not self.dev:
             print('UART device does not exist, not able to send the command')
-            continue
+            return
         self.dev.write(data)
 
     #TODO: not sure the purpose of this method

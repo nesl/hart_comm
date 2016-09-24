@@ -11,7 +11,7 @@ class HTTPClient(object):
         self.config = config
         self.remote_host = config["remotehost"]
         self.remote_port = config["remoteport"]
-		self.remote_http = 'http://%s:%d' % (self.remote_host, self.remote_port)
+        self.remote_http = 'http://%s:%d' % (self.remote_host, self.remote_port)
 
     def send_tb_summary(self, summary):
         r = requests.post( self.remote_http+'/tb/summary/',

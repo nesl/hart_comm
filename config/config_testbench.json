@@ -7,9 +7,9 @@
 	"tester" : {
 		"type": "ARM Cortex-M4",
 		"path": "/dev/ttyUSB0",
-		"tickrate": 10e-6,
+		"tickrate": 1e-6,
 		"maxevents": 7000,
-		"timeresolution": 10e-6
+		"timeresolution": 1e-6
 	},
 	"duts" : [
 		{
