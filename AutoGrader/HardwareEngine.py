@@ -1,4 +1,3 @@
-# ========== IMPORTS ==========
 import serial
 import string
 import time
@@ -87,4 +86,3 @@ class HardwareEngine(object):
 
     def enable_anlog_reading(self):
         self.uart.sendCommand( self.CMD_ENABLE_ANALOG )
-
