@@ -82,6 +82,7 @@ class HTTPServer(object):
             with open( firmware_path, 'wb' ) as f:
                 f.write( dut_firmware )
             shutil.copy(firmware_path, backup_dir)
+            subprocess.call(['rm', '-rf', '%s/*' % mount_path])
             shutil.copyfile(firmware_path, mount_path)
             print("programming DUT %s" % dut_id)
 

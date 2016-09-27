@@ -14,14 +14,15 @@ outfile_path = os.path.join(upload_root_folder_path, 'output.txt')
 
 
 class HardwareEngine(object):
-    status = 'IDLE'
-    config = ''
-    uart = None
-    baudrate = 460800
     CMD_RESET_DUT = 'U'
     CMD_RESET_TESTER = 'R'
     CMD_ENABLE_ANALOG = 'O'
     CMD_TERMINATE = 'E'
+
+    status = 'IDLE'
+    config = None
+    uart = None
+    baudrate = 460800
     outfile = None
     http_client = None
 
@@ -73,12 +74,12 @@ class HardwareEngine(object):
     def start_test(self, wavefile_name):
         # set status to busy
         self.status = 'TESTING'
-        # open waveform file
+        # open output file for saving test results
+        self.outfile = open(outfile_path, 'w')
+        # open waveform file and give commands
         with open(wavefile_name, 'rb') as wfile:
             data = wfile.read()
             self.uart.write(data)
-        # open output file for saving test results
-        self.outfile = open(outfile_path, 'w')
 
     def reset_dut(self):
         self.uart.sendCommand( self.CMD_RESET_DUT )
