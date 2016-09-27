@@ -31,6 +31,8 @@ class HardwareEngine(object):
         # init UART transceiver
         self.uart = UARTTransceiver(self.baudrate, self.config["tester"]["path"], self.on_data_rx)
         self.uart.start()
+        # start listening on UART
+        self.uart.open()
 
     def add_http_client(self, client):
         self.http_client = client
@@ -51,16 +53,12 @@ class HardwareEngine(object):
             os.makedirs(backup_dir)
             shutil.copy(outfile_path, backup_dir)
 
-            # stop listening to UART
-            self.uart.close()
-
             # send results file over HTTP
             try:
                 self.http_client.send_waveform( self.outfilepath )
                 print('Waveform file uploaded')
             except:
                 print('Unable to upload output to server')
-
 
             # update status over HTTP
             try:
@@ -81,11 +79,15 @@ class HardwareEngine(object):
             self.uart.write(data)
         # open output file for saving test results
         self.outfile = open(outfile_path, 'w')
-        # start listening on UART
-        self.uart.open()
 
     def reset_dut(self):
         self.uart.sendCommand( self.CMD_RESET_DUT )
+        # stop listening to UART
+        self.uart.close()
+
+        time.sleep(5.0)
+        
+        self.uart.open()
 
     def reset_tester(self):
         self.uart.sendCommand( self.CMD_RESET_TESTER )

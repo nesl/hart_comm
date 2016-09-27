@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-# -- imports --
 import os
 import re
 import serial
 import threading
 import struct
+
 
 class UARTTransceiver(threading.Thread):
     # class variables
