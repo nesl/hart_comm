@@ -2,7 +2,16 @@ import serial
 import string
 import time
 import threading
+import os
+import shutil
 from .UARTTransceiver import *
+
+
+# output generation path
+upload_root_folder_path = os.path.join('.', 'uploads')
+backup_folder_path = os.path.join(upload_root_folder_path, 'backups')
+outfile_path = os.path.join(upload_root_folder_path, 'output.txt')
+
 
 class HardwareEngine(object):
     status = 'IDLE'
@@ -13,7 +22,6 @@ class HardwareEngine(object):
     CMD_RESET_TESTER = 'R'
     CMD_ENABLE_ANALOG = 'O'
     CMD_TERMINATE = 'E'
-    outfilepath = 'uploads/output.txt'
     outfile = None
     http_client = None
 
@@ -23,8 +31,6 @@ class HardwareEngine(object):
         # init UART transceiver
         self.uart = UARTTransceiver(self.baudrate, self.config["tester"]["path"], self.on_data_rx)
         self.uart.start()
-        # open output file for saving test results
-        self.outfile = open(self.outfilepath, 'w')
 
     def add_http_client(self, client):
         self.http_client = client
@@ -32,13 +38,20 @@ class HardwareEngine(object):
     def on_data_rx(self, pktType, pktTime, pktVal):
         # if termination is received, change status and close file
         print('type: %d, time: %d, val: %d' % (pktType, pktTime, pktVal))
-        if pktType == ord(self.CMD_TERMINATE):
+        if pktType is not self.CMD_TERMINATE:
+            self.outfile.write( '%s, %d, %d\n' % (pktType, pktTime, pktVal) )
+        else: # we get a terminate packet
             self.status = 'IDLE'
             print('Test complete.')
             self.outfile.close()
 
+            # backup
+            now = datetime.datetime.now().strftime('%Y-%m-%d.%H:%M:%S.%f')
+            backup_dir = os.path.join(backup_folder_path, 'output', now)
+            os.makedirs(backup_dir)
+            shutil.copy(outfile_path, backup_dir)
+
             # stop listening to UART
-            self.uart.stopListening()
             self.uart.close()
 
             # send results file over HTTP
@@ -56,27 +69,20 @@ class HardwareEngine(object):
             except:
                 print('Unable to post status to server')
 
-            # re-open output file for saving test results
-            self.outfile = open(self.outfilepath, 'w')
-
-            return
-
-        # otherwise, we'll just write the outputs to a file
-        self.outfile.write( '%d, %d, %d\n' % (pktType, pktTime, pktVal) )
-
     def get_status(self):
         return self.status
 
-    def start_test(self, wavefile):
+    def start_test(self, wavefile_name):
         # set status to busy
         self.status = 'TESTING'
+        # open waveform file
+        with open(wavefile_name, 'rb') as wfile:
+            data = wfile.read()
+            self.uart.write(data)
+        # open output file for saving test results
+        self.outfile = open(outfile_path, 'w')
         # start listening on UART
         self.uart.open()
-        self.uart.startListening()        
-        # open waveform file
-        wfile = open(wavefile, 'rb')
-        data = wfile.read()
-        self.uart.write(data)
 
     def reset_dut(self):
         self.uart.sendCommand( self.CMD_RESET_DUT )

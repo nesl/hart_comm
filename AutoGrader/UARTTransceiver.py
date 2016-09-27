@@ -9,14 +9,18 @@ import struct
 
 class UARTTransceiver(threading.Thread):
     # class variables
-    baud_rate = 115200
-    dev_path = ''
-    dev = ''
-    callback = ''
     START_DELIM = b'S'
     STOP_DELIM = b'E'
     TOTAL_PKT_LEN = 9
-    listening = False
+
+    # instance variables
+    baud_rate = 115200
+    dev_path = None
+    dev = None
+    callback = None
+
+    alive = True
+
 
     def __init__(self, baud, path, callback):
         threading.Thread.__init__(self, name="uartserial")
@@ -24,43 +28,27 @@ class UARTTransceiver(threading.Thread):
         self.baud_rate = baud
         self.dev_path = path
         self.callback = callback
-        # flush the serial 
-        self.dev = serial.Serial()
 
     def __del__(self):
-        if self.dev.is_open:
+        if self.dev and self.dev.is_open:
             self.dev.close()
+        self.alive = False
 
     def run(self):
-        while True:
-            #TODO: what's this?
-            if not self.listening:
-                continue
-
-            #TODO: what's this?
+        while self.alive:
             # continue immediately if serial isn't ready
-            if not self.dev.is_open:
+            if not self.dev:
                 continue
 
-            #TODO: what's this?
-            # wait for 9 bytes (full packet)
-            while self.dev.inWaiting() < self.TOTAL_PKT_LEN:
-                pass
+            rxBuffer = self.dev(self.TOTAL_PKT_LEN)
 
-            # read in the full packet
-            rxBuffer = b''
-            for i in range(self.TOTAL_PKT_LEN):
-                rxBuffer += self.dev.read()
-
-            # check start and stop byte
+            # check the packet is valid via start and stop byte
             # (The reason that we have to use bytes[0:1] is that var[0] returns an int)
-            if rxBuffer[0:1] != self.START_DELIM or rxBuffer[8:9] != self.STOP_DELIM:
-                # bad packet
-                self.flush()
-                continue
+            if rxBuffer[0:1] == self.START_DELIM and rxBuffer[8:9] == self.STOP_DELIM:
+                self.handleData(rxBuffer[1:8])
 
-            # if we got this far, we have a (potentially) good packet to parse
-            self.handleData(rxBuffer[1:8])
+            #TODO: I think this line should be deleted
+            #self.flush()
 
     def handleData(self, binary):
         # 1B type, 4B time, 2B val
@@ -71,30 +59,20 @@ class UARTTransceiver(threading.Thread):
         except:
             pass
 
-    def flush(self):
-        self.dev.flushInput()
-        self.dev.flush()
-
-    def sendCommand(self, cmd):
-        was_open = self.dev.is_open
-        if not was_open:
-            self.open()
-
-        payload = self.START_DELIM + cmd.encode() + b'\x00\x00\x00\x00\x00\x00' + self.STOP_DELIM
-        self.dev.write(payload.encode())
-
-        if not was_open:
-            self.close()
-
-    def write(self, data):
-        was_open = self.dev.is_open
-        if not was_open:
-            self.open()
-
-        self.dev.write(data)
-
-        if not was_open:
-            self.close()
+    def open(self):
+        self.dev = serial.Serial()
+        self.dev.port = self.dev_path
+        self.dev.baudrate = self.baud_rate
+        self.dev.parity = serial.PARITY_NONE
+        self.dev.bytesize = serial.EIGHTBITS
+        self.dev.stopbits = serial.STOPBITS_ONE
+        self.dev.timeout = 0.01
+        self.dev.writeTimeout = None
+        try:
+            self.dev.open() 
+        except:
+            print('UART device unable to open')
+            self.dev = None
 
     def close(self):
         try:
@@ -102,26 +80,20 @@ class UARTTransceiver(threading.Thread):
             self.dev.close()
         except:
             print('UART device unable to close')
+        self.dev = None
 
-    def open(self):
-        self.dev = serial.Serial()
-        self.dev.port = self.dev_path    
-        self.dev.baudrate = self.baud_rate    
-        self.dev.parity=serial.PARITY_NONE
-        self.dev.bytesize=serial.EIGHTBITS
-        self.dev.stopbits=serial.STOPBITS_ONE
-        self.dev.timeout=None
-        self.dev.writeTimeout=None
-        try:
-            self.dev.open() 
-        except:
-            print('UART device unable to open')
+    def sendCommand(self, cmd):
+        payload = self.START_DELIM + cmd.encode() + b'\x00\x00\x00\x00\x00\x00' + self.STOP_DELIM
+        self.dev.write(payload)
 
-    def startListening(self):
-        self.listening = True
+    def write(self, data):
+        if not self.dev:
+            print('UART device does not exist, not able to send the command')
+            return
+        self.dev.write(data)
 
-    def stopListening(self):
-        self.listening = False
-
-
+    #TODO: not sure the purpose of this method
+    #def flush(self):
+    #    self.dev.flushInput()
+    #    self.dev.flush()
 
