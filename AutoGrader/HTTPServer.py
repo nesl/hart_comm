@@ -1,6 +1,6 @@
 import json
 from klein import Klein
-from subprocess import call
+import subprocess
 import time
 import datetime
 import os
@@ -23,7 +23,7 @@ class HTTPServer(object):
         self.config = config
         self.dut_configs = {}
         for d in self.config["duts"]:
-            self.dut_configs[ d["id"] ] = d:
+            self.dut_configs[ d["id"] ] = d
 
     def addHardware(self, hw):
         self.hardware = hw
@@ -34,26 +34,35 @@ class HTTPServer(object):
     # DUT FIRMWARE UPDATE
     @app.route('/dut/program/', methods=['POST'])
     def dut_program(self, request):
+        # num_duts field
         num_duts_list = request.args.get('num_duts'.encode())
-        if not num_duts:
+        if not num_duts_list:
             print('Error: num_duts field is not specified')
             return
+
         try:
-            num_duts = int(dut_ids[0].decode())
+            num_duts = int(num_duts_list[0].decode())
         except:
             print('Error: incorrect format in num_duts field')
             return
 
         dut_id_2_firmware = {}
         for i in range(num_duts):
+            # dut* field
             key = 'dut%d' % i
             dut_ids = request.args.get(key.encode())
             if not dut_ids:
                 print('Error: %s field is not specified' % key)
                 return
-            dut_id = dut_ids[0]
-            if not self.dut_configs[dut_id]:
-                print('Error: specified DUT (id=%s) not found', dut_id)
+
+            try:
+                dut_id = int(dut_ids[0].decode())
+            except:
+                print('Error: unrecognized dut ID')
+                return
+
+            if dut_id not in self.dut_configs:
+                print('Error: specified DUT (id=%d) not found' % dut_id)
                 return
             
             key = 'firmware%d' % i
@@ -77,18 +86,20 @@ class HTTPServer(object):
         backup_dir = os.path.join(backup_folder_path, 'program', now)
         os.makedirs(backup_dir)
 
-        for dut_id in dur_id_2_firmware:
-            firmware_path = os.path.join(upload_root_folder_path, 'dut%s_firmware.bin' % dut_id)
+        for dut_id in dut_id_2_firmware:
+            firmware_path = os.path.join(upload_root_folder_path, 'dut%d_firmware.bin' % dut_id)
             with open( firmware_path, 'wb' ) as f:
                 f.write( dut_firmware )
             shutil.copy(firmware_path, backup_dir)
+            mount_path = self.dut_configs[dut_id]['mount']
             subprocess.call(['rm', '-rf', '%s/*' % mount_path])
-            shutil.copyfile(firmware_path, mount_path)
-            print("programming DUT %s" % dut_id)
+            print(firmware_path, mount_path)
+            shutil.copy(firmware_path, mount_path)
+            print("programming DUT %d" % dut_id)
 
 
         # wait for it to copy and then reset the DUT
-		#TODO: check why do we need these delay
+        #TODO: check why do we need these delay
         time.sleep(2.5)
         self.hardware.reset_dut()
         time.sleep(0.20)
@@ -106,6 +117,8 @@ class HTTPServer(object):
         waveform = waveform_list[0]
         with open( waveform_path, 'wb' ) as f:
             f.write( waveform )
+        
+        time.sleep(4.0)
 
         # backup
         now = datetime.datetime.now().strftime('%Y-%m-%d.%H:%M:%S.%f')

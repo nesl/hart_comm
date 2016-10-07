@@ -4,6 +4,8 @@ import time
 import threading
 import os
 import shutil
+import datetime
+import traceback
 from .UARTTransceiver import *
 
 
@@ -31,18 +33,15 @@ class HardwareEngine(object):
         self.config = config
         # init UART transceiver
         self.uart = UARTTransceiver(self.baudrate, self.config["tester"]["path"], self.on_data_rx)
-        self.uart.start()
-        # start listening on UART
-        self.uart.open()
 
     def add_http_client(self, client):
         self.http_client = client
 
     def on_data_rx(self, pktType, pktTime, pktVal):
         # if termination is received, change status and close file
-        print('type: %d, time: %d, val: %d' % (pktType, pktTime, pktVal))
+        print('type: %s, time: %d, val: %d' % (pktType, pktTime, pktVal))
         if pktType is not self.CMD_TERMINATE:
-            self.outfile.write( '%s, %d, %d\n' % (pktType, pktTime, pktVal) )
+            self.outfile.write( '%d, %d, %d\n' % (ord(pktType), pktTime, pktVal) )
         else: # we get a terminate packet
             self.status = 'IDLE'
             print('Test complete.')
@@ -56,7 +55,7 @@ class HardwareEngine(object):
 
             # send results file over HTTP
             try:
-                self.http_client.send_waveform( self.outfilepath )
+                self.http_client.send_waveform( outfile_path )
                 print('Waveform file uploaded')
             except:
                 print('Unable to upload output to server')
@@ -86,9 +85,9 @@ class HardwareEngine(object):
         # stop listening to UART
         self.uart.close()
 
-        time.sleep(5.0)
+        time.sleep(2.0)
         
-        self.uart.open()
+        self.uart = UARTTransceiver(self.baudrate, self.config["tester"]["path"], self.on_data_rx)
 
     def reset_tester(self):
         self.uart.sendCommand( self.CMD_RESET_TESTER )
