@@ -57,11 +57,15 @@ class UARTTransceiver(threading.Thread):
                 continue
 
             rxBuffer = self.dev.read(self.TOTAL_PKT_LEN)
-
+            
+            if (len(rxBuffer) != self.TOTAL_PKT_LEN):
+                continue
             # check the packet is valid via start and stop byte
             # (The reason that we have to use bytes[0:1] is that var[0] returns an int)
             if rxBuffer[0:1] == self.START_DELIM and rxBuffer[8:9] == self.STOP_DELIM:
                 self.handleData(rxBuffer[1:8])
+            else:
+                print('bad packet!', rxBuffer, len(rxBuffer))
 
             #TODO: I think this line should be deleted
             #self.flush()
@@ -96,6 +100,7 @@ class UARTTransceiver(threading.Thread):
         if not self.dev:
             print('UART device does not exist, not able to send the command')
             return
+        print ('Writing to UART')
         self.dev.write(data)
 
     #TODO: not sure the purpose of this method

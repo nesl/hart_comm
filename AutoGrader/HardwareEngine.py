@@ -82,15 +82,17 @@ class HardwareEngine(object):
 
     def reset_dut(self):
         self.uart.sendCommand( self.CMD_RESET_DUT )
+        time.sleep(0.2)
+
+    def reset_tester(self):
+        self.uart.sendCommand( self.CMD_RESET_TESTER )
+        
         # stop listening to UART
         self.uart.close()
 
         time.sleep(2.0)
         
         self.uart = UARTTransceiver(self.baudrate, self.config["tester"]["path"], self.on_data_rx)
-
-    def reset_tester(self):
-        self.uart.sendCommand( self.CMD_RESET_TESTER )
 
     def enable_anlog_reading(self):
         self.uart.sendCommand( self.CMD_ENABLE_ANALOG )

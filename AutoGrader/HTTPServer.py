@@ -92,7 +92,13 @@ class HTTPServer(object):
                 f.write( dut_firmware )
             shutil.copy(firmware_path, backup_dir)
             mount_path = self.dut_configs[dut_id]['mount']
+            dev_path = self.dut_configs[dut_id]['dev_path']
             subprocess.call(['rm', '-rf', '%s/*' % mount_path])
+            print("Removing old codes from DUT")
+            subprocess.call(['umount', mount_path])
+            print("Unmounting..")
+            subprocess.call(['mount', dev_path, mount_path])
+            print("Mounting back")
             print(firmware_path, mount_path)
             shutil.copy(firmware_path, mount_path)
             print("programming DUT %d" % dut_id)
@@ -118,8 +124,6 @@ class HTTPServer(object):
         with open( waveform_path, 'wb' ) as f:
             f.write( waveform )
         
-        time.sleep(4.0)
-
         # backup
         now = datetime.datetime.now().strftime('%Y-%m-%d.%H:%M:%S.%f')
         backup_dir = os.path.join(backup_folder_path, 'waveform', now)
@@ -145,7 +149,6 @@ class HTTPServer(object):
 
         # reset DUT
         self.hardware.reset_dut()
-        time.sleep(0.20)
 
         request.setHeader('Content-Type', 'text/plain')
         return "DUT [%s] reset request received" % dut_id
@@ -169,7 +172,6 @@ class HTTPServer(object):
 
         # start testing
         self.hardware.start_test(waveform_path)
-        time.sleep(0.20)
 
         request.setHeader('Content-Type', 'text/plain')
         return "Tester start request received"

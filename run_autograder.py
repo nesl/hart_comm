@@ -34,6 +34,9 @@ def send_summary():
         http_client.send_tb_summary(json.dumps(config))
     except Exception as e:
         print('remote server is down')
+        import traceback
+        exc_info = sys.exc_info()
+        traceback.print_exception(*exc_info)
 
 
 # schedule periodic jobs

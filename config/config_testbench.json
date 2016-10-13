@@ -1,8 +1,8 @@
 {
 	"type" : "Intel NUC",
 	"id" : 1,
-	"remotehost" : "172.17.5.63",
-	"remoteport" : 8000,
+	"remotehost" : "autograder.nesl.ucla.edu",
+	"remoteport" : 80,
 	"localport" : 8889,
 	"tester" : {
 		"type": "ARM Cortex-M4",
@@ -16,7 +16,8 @@
 			"name": "mbed1",
 			"type": "mbed",
 			"id" : 1,
-			"mount" : "/media/embed-autograder/MBED1/"
+			"mount" : "/media/embed-autograder/DUT/",
+			"dev_path": "/dev/sdb"
 		}
 	],
 	"wires" : [
