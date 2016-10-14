@@ -95,16 +95,16 @@ class UARTTransceiver(threading.Thread):
     def sendCommand(self, cmd):
         payload = self.START_DELIM + cmd.encode() + b'\x00\x00\x00\x00\x00\x00' + self.STOP_DELIM
         self.dev.write(payload)
+    
+    def sendOnePacketInCsvFormat(line):
+        terms = line.split(',')
+        pkt_type, pkt_time, pkt_val = chr(int(terms[0])), int(terms[1]), int(terms[2])
+        binary = struct.pack('=ccIHc', self.START_DELIM, pkt_type.encode('ascii'), pkt_time, pkt_val, self.STOP_DELIM)
+        self._write(binary)
 
-    def write(self, data):
+    def _write(self, data):
         if not self.dev:
             print('UART device does not exist, not able to send the command')
             return
         print ('Writing to UART')
         self.dev.write(data)
-
-    #TODO: not sure the purpose of this method
-    #def flush(self):
-    #    self.dev.flushInput()
-    #    self.dev.flush()
-

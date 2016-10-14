@@ -76,9 +76,9 @@ class HardwareEngine(object):
         # open output file for saving test results
         self.outfile = open(outfile_path, 'w')
         # open waveform file and give commands
-        with open(wavefile_name, 'rb') as wfile:
-            data = wfile.read()
-            self.uart.write(data)
+        with open(wavefile_name, 'r') as wfile:
+            for line in wfile:
+                self.uart.sendOnePacketInCsvFormat(line)
 
     def reset_dut(self):
         self.uart.sendCommand( self.CMD_RESET_DUT )
