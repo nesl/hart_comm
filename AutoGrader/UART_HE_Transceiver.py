@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import os
 import re
 import sys
@@ -8,14 +6,14 @@ import threading
 import struct
 import traceback
 
-class UARTTransceiver(threading.Thread):
+class UART_HE_Transceiver(threading.Thread):
     # class variables
     START_DELIM = b'S'
     STOP_DELIM = b'E'
     TOTAL_PKT_LEN = 9
 
     # instance variables
-    baud_rate = 115200
+    baud_rate = None
     dev_path = None
     dev = None
     callback = None
@@ -41,10 +39,10 @@ class UARTTransceiver(threading.Thread):
         try:
             tmp_dev.open() 
             self.dev = tmp_dev
-            print('UART is open')
+            print('(HE) UART is open')
             self.start()
         except:
-            print('UART device unable to open',  sys.exc_info()[0], sys.exc_info()[1])
+            print('(HE) UART device unable to open',  sys.exc_info()[0], sys.exc_info()[1])
 
     def __del__(self):
         if self.dev and self.dev.is_open:
@@ -58,24 +56,21 @@ class UARTTransceiver(threading.Thread):
 
             rxBuffer = self.dev.read(self.TOTAL_PKT_LEN)
             
-            if (len(rxBuffer) != self.TOTAL_PKT_LEN):
+            if len(rxBuffer) != self.TOTAL_PKT_LEN:
                 continue
             # check the packet is valid via start and stop byte
             # (The reason that we have to use bytes[0:1] is that var[0] returns an int)
             if rxBuffer[0:1] == self.START_DELIM and rxBuffer[8:9] == self.STOP_DELIM:
                 self.handleData(rxBuffer[1:8])
             else:
-                print('bad packet!', rxBuffer, len(rxBuffer))
-
-            #TODO: I think this line should be deleted
-            #self.flush()
+                print('(HE) bad packet!', rxBuffer, len(rxBuffer))
 
         try:
             self.dev.flush()
             self.dev.close()
-            print('UART is closed')
+            print('(HE) UART is closed')
         except:
-            print('UART device unable to close')
+            print('(HE) UART device unable to close')
         self.dev = None
 
     def handleData(self, binary):
@@ -85,7 +80,7 @@ class UARTTransceiver(threading.Thread):
             pktType = pktType.decode('ascii')
             self.callback(pktType, pktTime, pktVal)
         except:
-            print('dont say it fails')
+            print('(HE) Cannot handle the packet...')
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
 
@@ -104,7 +99,7 @@ class UARTTransceiver(threading.Thread):
 
     def _write(self, data):
         if not self.dev:
-            print('UART device does not exist, not able to send the command')
+            print('(HE) UART device does not exist, not able to send the command')
             return
-        print ('Writing to UART')
+        print ('(HE) Writing to UART')
         self.dev.write(data)

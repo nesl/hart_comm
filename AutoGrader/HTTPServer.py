@@ -104,11 +104,10 @@ class HTTPServer(object):
             print("programming DUT %d" % dut_id)
 
 
-        # wait for it to copy and then reset the DUT
-        #TODO: check why do we need these delay
-        time.sleep(2.5)
+        # after upload the binaries to DUT, it takes some time to refresh
+        time.sleep(4.0)
+
         self.hardware.reset_dut()
-        time.sleep(0.20)
 
         return "Firmware updated"
 
@@ -159,8 +158,7 @@ class HTTPServer(object):
         print('resetting tester')
 
         # reset tester
-        self.hardware.reset_tester()
-        time.sleep(0.20)
+        self.hardware.reset_hardware_engine()
 
         request.setHeader('Content-Type', 'text/plain')
         return "Tester reset request received"
