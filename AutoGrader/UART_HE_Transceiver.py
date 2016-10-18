@@ -49,21 +49,29 @@ class UART_HE_Transceiver(threading.Thread):
             self.dev.close()
 
     def run(self):
+        rx_buffer = b''
+
         while self.alive:
             # continue immediately if serial isn't ready
             if not self.dev:
                 continue
 
-            rxBuffer = self.dev.read(self.TOTAL_PKT_LEN)
+            # Because we set a read timeout, chances are we only get a 
+            # partial of a packet
+            rx_buffer += self.dev.read(self.TOTAL_PKT_LEN)
             
-            if len(rxBuffer) != self.TOTAL_PKT_LEN:
+            # Thus, if it's not a complete packet yet, read more
+            if len(rx_buffer) < self.TOTAL_PKT_LEN:
                 continue
+
             # check the packet is valid via start and stop byte
             # (The reason that we have to use bytes[0:1] is that var[0] returns an int)
-            if rxBuffer[0:1] == self.START_DELIM and rxBuffer[8:9] == self.STOP_DELIM:
-                self.handleData(rxBuffer[1:8])
+            if rx_buffer[0:1] == self.START_DELIM and rx_buffer[8:9] == self.STOP_DELIM:
+                self.handleData(rx_buffer[1:8])
             else:
-                print('(HE) bad packet!', rxBuffer, len(rxBuffer))
+                print('(HE) bad packet!', rx_buffer[0:9])
+
+            rx_buffer = rx_buffer[9:]
 
         try:
             self.dev.flush()
