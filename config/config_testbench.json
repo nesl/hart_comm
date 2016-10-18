@@ -17,7 +17,8 @@
 			"type": "mbed",
 			"id" : 1,
 			"mount" : "/media/embed-autograder/DUT/",
-			"dev_path": "/dev/sdb"
+			"dev_path": "/dev/sdc",
+			"usb_path": "/dev/ttyACM2"
 		}
 	],
 	"wires" : [
