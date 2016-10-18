@@ -18,7 +18,8 @@
 			"id" : 1,
 			"mount" : "/media/embed-autograder/DUT/",
 			"dev_path": "/dev/sdc",
-			"usb_path": "/dev/ttyACM2"
+			"usb_path": "/dev/ttyACM0",
+			"do_nothing_firmware": "../do_nothing_firmware/NUCLEO_F746ZG.bin"
 		}
 	],
 	"wires" : [
