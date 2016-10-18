@@ -14,11 +14,11 @@ class HTTPClient(object):
 
     def send_tb_summary(self, summary):
         try:
-            r = requests.post( self.remote_http+'/tb/summary/',
+            r = requests.post( self.remote_http+'/tb/send-summary/',
                     data={'summary': summary},
                     headers={'content-type': "application/x-www-form-urlencoded"},
                     timeout=1.0, verify=False)
-        except requests.exceptions.ConnectionError:
+        except:
             print('[Network Error] Remote server is down... Failed on sending summary messages')
             return False
         return True
@@ -26,23 +26,29 @@ class HTTPClient(object):
 
     def send_tb_status(self, status):
         try:
-            r = requests.post( self.remote_http+'/tb/status/',
+            r = requests.post( self.remote_http+'/tb/send-status/',
                     data={'id':self.config["id"], 'status': status},
                     headers={'content-type': "application/x-www-form-urlencoded"},
                     timeout=1.0, verify=False)
-        except requests.exceptions.ConnectionError:
+        except:
             print('[Network Error] Remote server is down... Failed on sending testbed status')
             return False
         return True
 
-    def send_waveform(self, fpath):
+    def send_dut_output(self, f_waveform_path, f_log_path):
         try:
-            files = {'waveform': ('waveform.txt', open(fpath, 'rb'), 'text/plain')}
-            r = requests.post( self.remote_http+'/tb/waveform/',
-                    data={'id':self.config["id"]},
-                    files=files,
-                    timeout=5.0, verify=False)
-        except requests.exceptions.ConnectionError:
+            data = {
+                    'id': self.config["id"],
+                    'num_duts': 1,
+            }
+            files = {
+                    'dut0_waveform': ('waveform0.txt', open(f_waveform_path, 'rb'), 'text/plain'),
+                    'dut0_serial_log': ('serial0.bin', open(f_log_path, 'rb'), 'text/plain'),
+            }
+            # The files can be big, wait longer time to transfer data back
+            r = requests.post(self.remote_http + '/tb/send-dut-output/',
+                    data=data, files=files, timeout=10.0, verify=False)
+        except:
             print('[Network Error] Cannot send grading result back to remote server')
             return False
         return True

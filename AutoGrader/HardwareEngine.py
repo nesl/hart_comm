@@ -71,7 +71,7 @@ class HardwareEngine(object):
             shutil.copy(log_path, backup_log_dir)
             
             # send results file over HTTP
-            if self.http_client.send_waveform(outfile_path):
+            if self.http_client.send_dut_output(outfile_path, log_path):
                 print('Waveform file uploaded')
             else:
                 print('Unable to upload output to server')
