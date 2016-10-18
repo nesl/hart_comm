@@ -57,6 +57,7 @@ class HardwareEngine(object):
 
             # Stop getting result from DUT. Just need to close entire DUT communication
             self.dut_uart.close()
+            self.dut_uart = None
 
             # backup
             now = datetime.datetime.now().strftime('%Y-%m-%d.%H:%M:%S.%f')
@@ -67,7 +68,7 @@ class HardwareEngine(object):
             
             backup_log_dir = os.path.join(backup_folder_path, 'log', now)
             os.makedirs(backup_log_dir)
-            shutil.copy(log, backup_log_dir)
+            shutil.copy(log_path, backup_log_dir)
             
             # send results file over HTTP
             if self.http_client.send_waveform(outfile_path):
@@ -90,7 +91,9 @@ class HardwareEngine(object):
 
         # open output file for saving test results; open dut serial communication for log files
         self.outfile = open(outfile_path, 'w')
-        self.dut_uart = UART_DUT_Transceiver(self.dut_baudrate, self.config["dut"]["path"], log_path)
+
+        #TODO: should not assume there is only one DUT
+        self.dut_uart = UART_DUT_Transceiver(self.dut_baudrate, self.config["duts"][0]["usb_path"], log_path)
         
         # open waveform file and give commands
         with open(wavefile_name, 'r') as wfile:
@@ -98,6 +101,12 @@ class HardwareEngine(object):
                 self.he_uart.sendOnePacketInCsvFormat(line)
 
     def reset_dut(self):
+        # Make sure DUT hang up UARTs. Things can happen if a testing session
+        # is on going, or the E-packet is missing so that the session never ends.
+        if self.dut_uart:
+            self.dut_uart.close()
+            self.dut_uart = None
+
         self.he_uart.sendCommand(self.CMD_RESET_DUT)
 
         # give it some time to recover
@@ -113,7 +122,7 @@ class HardwareEngine(object):
         # TODO: anytime beyond 0.5 is too long
         time.sleep(2.0)
         
-        self.he_uart = UARTTransceiver(self.he_baudrate, self.config["tester"]["path"], self.on_he_data_rx)
+        self.he_uart = UART_HE_Transceiver(self.he_baudrate, self.config["tester"]["path"], self.on_he_data_rx)
 
     def enable_anlog_reading(self):
         self.he_uart.sendCommand(self.CMD_ENABLE_ANALOG)

@@ -99,7 +99,6 @@ class HTTPServer(object):
             print("Unmounting..")
             subprocess.call(['mount', dev_path, mount_path])
             print("Mounting back")
-            print(firmware_path, mount_path)
             shutil.copy(firmware_path, mount_path)
             print("programming DUT %d" % dut_id)
 

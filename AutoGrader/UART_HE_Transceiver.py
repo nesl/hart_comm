@@ -91,7 +91,7 @@ class UART_HE_Transceiver(threading.Thread):
         payload = self.START_DELIM + cmd.encode() + b'\x00\x00\x00\x00\x00\x00' + self.STOP_DELIM
         self.dev.write(payload)
     
-    def sendOnePacketInCsvFormat(line):
+    def sendOnePacketInCsvFormat(self, line):
         terms = line.split(',')
         pkt_type, pkt_time, pkt_val = chr(int(terms[0])), int(terms[1]), int(terms[2])
         binary = struct.pack('=ccIHc', self.START_DELIM, pkt_type.encode('ascii'), pkt_time, pkt_val, self.STOP_DELIM)
@@ -101,5 +101,5 @@ class UART_HE_Transceiver(threading.Thread):
         if not self.dev:
             print('(HE) UART device does not exist, not able to send the command')
             return
-        print ('(HE) Writing to UART')
+        print ('(HE) Writing to UART', data)
         self.dev.write(data)
