@@ -86,6 +86,27 @@ class HTTPServer(object):
         backup_dir = os.path.join(backup_folder_path, 'program', now)
         os.makedirs(backup_dir)
 
+        # We found if we follow this procedure: copying code then unmount and
+        # mount, it makes the burning process a lot smoother
+
+        # initialize DUTs by burning do-nothing firmware
+        for dut_id in dut_id_2_firmware:
+            mount_path = self.dut_configs[dut_id]['mount']
+            dev_path = self.dut_configs[dut_id]['dev_path']
+            subprocess.call(['rm', '-rf', '%s/*' % mount_path])
+            print("Removing old codes from DUT (id=%d)" % dut_id)
+            shutil.copy(self.dut_configs[dut_id]['do_nothing_firmware'], mount_path)
+            print("programming do-nothing firmware on DUT %d" % dut_id)
+            subprocess.call(['umount', mount_path])
+            print("Unmounting.. (id=%d)" % dut_id)
+            subprocess.call(['mount', dev_path, mount_path])
+            print("Mounting back (id=%d)" % dut_id)
+
+        # after upload the binaries to DUT, it takes some time to refresh
+        time.sleep(8.0)
+        self.hardware.reset_dut()
+        time.sleep(2.0)
+
         for dut_id in dut_id_2_firmware:
             firmware_path = os.path.join(upload_root_folder_path, 'dut%d_firmware.bin' % dut_id)
             with open( firmware_path, 'wb' ) as f:
@@ -94,14 +115,13 @@ class HTTPServer(object):
             mount_path = self.dut_configs[dut_id]['mount']
             dev_path = self.dut_configs[dut_id]['dev_path']
             subprocess.call(['rm', '-rf', '%s/*' % mount_path])
-            print("Removing old codes from DUT")
-            subprocess.call(['umount', mount_path])
-            print("Unmounting..")
-            subprocess.call(['mount', dev_path, mount_path])
-            print("Mounting back")
+            print("Removing old codes from DUT (id=%d)" % dut_id)
             shutil.copy(firmware_path, mount_path)
-            print("programming DUT %d" % dut_id)
-
+            print("programming real firmware on DUT %d" % dut_id)
+            subprocess.call(['umount', mount_path])
+            print("Unmounting.. (id=%d)" % dut_id)
+            subprocess.call(['mount', dev_path, mount_path])
+            print("Mounting back (id=%d)" % dut_id)
 
         # after upload the binaries to DUT, it takes some time to refresh
         time.sleep(4.0)
