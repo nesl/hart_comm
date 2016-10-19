@@ -17,7 +17,7 @@ class HTTPClient(object):
             r = requests.post( self.remote_http+'/tb/send-summary/',
                     data={'summary': summary},
                     headers={'content-type': "application/x-www-form-urlencoded"},
-                    timeout=1.0, verify=False)
+                    timeout=1.0)
         except:
             print('[Network Error] Remote server is down... Failed on sending summary messages')
             return False
@@ -29,7 +29,7 @@ class HTTPClient(object):
             r = requests.post( self.remote_http+'/tb/send-status/',
                     data={'id':self.config["id"], 'status': status},
                     headers={'content-type': "application/x-www-form-urlencoded"},
-                    timeout=1.0, verify=False)
+                    timeout=1.0)
         except:
             print('[Network Error] Remote server is down... Failed on sending testbed status')
             return False
@@ -47,7 +47,7 @@ class HTTPClient(object):
             }
             # The files can be big, wait longer time to transfer data back
             r = requests.post(self.remote_http + '/tb/send-dut-output/',
-                    data=data, files=files, timeout=10.0, verify=False)
+                    data=data, files=files, timeout=10.0)
         except:
             print('[Network Error] Cannot send grading result back to remote server')
             return False

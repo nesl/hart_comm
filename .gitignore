@@ -45,3 +45,7 @@ uploads/
 
 # project note
 programming_instructions.txt
+
+# config
+config/config_testbench.json
+
