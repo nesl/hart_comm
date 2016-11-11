@@ -132,7 +132,7 @@ class HTTPServer(object):
 
 
     # WAVEFORM UPLOAD
-    @app.route('/tester/waveform/', methods=['POST'])
+    @app.route('/tb/upload_input_waveform/', methods=['POST'])
     def tester_waveform(self, request):
         waveform_list = request.args.get('waveform'.encode())
         if not waveform_list:
@@ -172,7 +172,7 @@ class HTTPServer(object):
         return "DUT [%s] reset request received" % dut_id
 
     # HARDWARE ENGINE RESET
-    @app.route('/tester/reset/', methods=['POST'])
+    @app.route('/he/reset/', methods=['POST'])
     def tester_reset(self, request):
         print('resetting tester')
 
@@ -183,7 +183,7 @@ class HTTPServer(object):
         return "Tester reset request received"
 
     # HARDWARE ENGINE START TEST
-    @app.route('/tester/start/', methods=['POST'])
+    @app.route('/tb/start/', methods=['POST'])
     def tester_start(self, request):
         print('starting test')
 
@@ -194,7 +194,7 @@ class HTTPServer(object):
         return "Tester start request received"
 
     # GET TESTER STATUS
-    @app.route('/tester/status/', methods=['GET'])
+    @app.route('/tb/status/', methods=['GET'])
     def tester_status(self, request):
         if not self.hardware:
             return "ERROR_NOHARDWARE"
