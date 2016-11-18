@@ -9,8 +9,9 @@ import shutil
 # firmware upload path
 upload_root_folder_path = os.path.join('.', 'uploads')
 backup_folder_path = os.path.join(upload_root_folder_path, 'backups')
-waveform_path = os.path.join(upload_root_folder_path, 'waveform.txt')
 
+required_dut_file_fields = ['dut_binary.bin']
+required_input_file_fields = ['input_waveform']
 
 class HTTPServer(object):
     app = Klein()
@@ -31,53 +32,43 @@ class HTTPServer(object):
     def start(self):
         self.app.run('0.0.0.0', self.config["localport"] )
 
-    # DUT FIRMWARE UPDATE
+    def burn_firmware_on_dut(self, dut_id, firmware_path, firmware_short_desp=None):
+        # To make the burning process smoother, we have to copy the code to mbeds, unmound mbeds,
+        # and mound mbeds. After we adapt to it, we didn't see any burning error.
+        if not firmware_short_desp:
+            firmware_short_desp = ''
+        else:
+            firmware_short_desp += ' '
+        mount_path = self.dut_configs[dut_id]['mount']
+        dev_path = self.dut_configs[dut_id]['dev_path']
+        
+        print("Removing old codes from DUT (id=%d)" % dut_id)
+        subprocess.call(['rm', '-rf', '%s/*' % mount_path])
+        time.sleep(0.3)
+        
+        print("programming %sfirmware on DUT %d" % (firmware_short_desp, dut_id))
+        shutil.copy(firmware_path, mount_path)
+        time.sleep(0.3)
+        
+        print("Unmounting.. (id=%d) %s" % (dut_id, dev_path))
+        subprocess.call(['umount', dev_path])
+        time.sleep(0.3)
+        
+        print("Mounting back (id=%d) %s %s" % (dut_id, dev_path, mount_path))
+        subprocess.call(['mount', dev_path, mount_path])
+        time.sleep(0.3)
+
     @app.route('/dut/program/', methods=['POST'])
     def dut_program(self, request):
-        # num_duts field
-        num_duts_list = request.args.get('num_duts'.encode())
-        if not num_duts_list:
-            print('Error: num_duts field is not specified')
-            return
-
-        try:
-            num_duts = int(num_duts_list[0].decode())
-        except:
-            print('Error: incorrect format in num_duts field')
-            return
-
-        dut_id_2_firmware = {}
-        for i in range(num_duts):
-            # dut* field
-            key = 'dut%d' % i
-            dut_ids = request.args.get(key.encode())
-            if not dut_ids:
-                print('Error: %s field is not specified' % key)
+        dut_files = {}
+        for field in required_dut_file_fields:
+            file_binary = request.args.get(field.encode())
+            if not file_binary:
+                print('Error: field %s is not specified' % field)
                 return
+            dut_files[field] = file_binary[0]
 
-            try:
-                dut_id = int(dut_ids[0].decode())
-            except:
-                print('Error: unrecognized dut ID')
-                return
-
-            if dut_id not in self.dut_configs:
-                print('Error: specified DUT (id=%d) not found' % dut_id)
-                return
-            
-            key = 'firmware%d' % i
-            dut_firmware_list = request.args.get(key.encode())
-            if not dut_firmware_list:
-                print('Error: %s field is not specified' % key)
-                return
-            dut_firmware = dut_firmware_list[0]
-
-            dut_id_2_firmware[dut_id] = dut_firmware
-
-        if len(dut_id_2_firmware) != len(self.dut_configs):
-            print('Error: not all DUT firmwares are specified')
-            return
-
+        # prepare upload folder
         if not os.path.isdir(upload_root_folder_path):
             os.makedirs(upload_root_folder_path)
         
@@ -86,42 +77,27 @@ class HTTPServer(object):
         backup_dir = os.path.join(backup_folder_path, 'program', now)
         os.makedirs(backup_dir)
 
-        # We found if we follow this procedure: copying code then unmount and
-        # mount, it makes the burning process a lot smoother
+        for field in dut_files:
+            path = os.path.join(upload_root_folder_path, field)
+            with open(path, 'wb') as fo:
+                fo.write(dut_files[field])
+            shutil.copy(path, backup_dir)
+       
+        #TODO: the following is time_sync homework specific
+        firmware_path = os.path.join(upload_root_folder_path, 'dut_binary.bin')
 
         # initialize DUTs by burning do-nothing firmware
-        for dut_id in dut_id_2_firmware:
-            mount_path = self.dut_configs[dut_id]['mount']
-            dev_path = self.dut_configs[dut_id]['dev_path']
-            subprocess.call(['rm', '-rf', '%s/*' % mount_path])
-            print("Removing old codes from DUT (id=%d)" % dut_id)
-            shutil.copy(self.dut_configs[dut_id]['do_nothing_firmware'], mount_path)
-            print("programming do-nothing firmware on DUT %d" % dut_id)
-            subprocess.call(['umount', mount_path])
-            print("Unmounting.. (id=%d)" % dut_id)
-            subprocess.call(['mount', dev_path, mount_path])
-            print("Mounting back (id=%d)" % dut_id)
+        for dut_id in [1, 2]:
+            self.burn_firmware_on_dut(dut_id, self.dut_configs[dut_id]['do_nothing_firmware'],
+                    firmware_short_desp='blank')
 
         # after upload the binaries to DUT, it takes some time to refresh
         time.sleep(8.0)
         self.hardware.reset_dut()
         time.sleep(2.0)
 
-        for dut_id in dut_id_2_firmware:
-            firmware_path = os.path.join(upload_root_folder_path, 'dut%d_firmware.bin' % dut_id)
-            with open( firmware_path, 'wb' ) as f:
-                f.write( dut_firmware )
-            shutil.copy(firmware_path, backup_dir)
-            mount_path = self.dut_configs[dut_id]['mount']
-            dev_path = self.dut_configs[dut_id]['dev_path']
-            subprocess.call(['rm', '-rf', '%s/*' % mount_path])
-            print("Removing old codes from DUT (id=%d)" % dut_id)
-            shutil.copy(firmware_path, mount_path)
-            print("programming real firmware on DUT %d" % dut_id)
-            subprocess.call(['umount', mount_path])
-            print("Unmounting.. (id=%d)" % dut_id)
-            subprocess.call(['mount', dev_path, mount_path])
-            print("Mounting back (id=%d)" % dut_id)
+        for dut_id in [1, 2]:
+            self.burn_firmware_on_dut(dut_id, firmware_path, firmware_short_desp='student')
 
         # after upload the binaries to DUT, it takes some time to refresh
         time.sleep(4.0)
@@ -134,19 +110,27 @@ class HTTPServer(object):
     # WAVEFORM UPLOAD
     @app.route('/tb/upload_input_waveform/', methods=['POST'])
     def tester_waveform(self, request):
-        waveform_list = request.args.get('waveform'.encode())
-        if not waveform_list:
-            print('Error: waveform field is not specified')
-            return
-        waveform = waveform_list[0]
-        with open( waveform_path, 'wb' ) as f:
-            f.write( waveform )
+        input_files = {}
+        for field in required_input_file_fields:
+            file_binary = request.args.get(field.encode())
+            if not file_binary:
+                print('Error: field %s is not specified' % field)
+            input_files[field] = file_binary[0]
         
-        # backup
+        # prepare upload folder
+        if not os.path.isdir(upload_root_folder_path):
+            os.makedirs(upload_root_folder_path)
+        
+        # create backup
         now = datetime.datetime.now().strftime('%Y-%m-%d.%H:%M:%S.%f')
-        backup_dir = os.path.join(backup_folder_path, 'waveform', now)
+        backup_dir = os.path.join(backup_folder_path, 'input', now)
         os.makedirs(backup_dir)
-        shutil.copy(waveform_path, backup_dir)
+
+        for field in input_files:
+            path = os.path.join(upload_root_folder_path, field)
+            with open(path, 'wb') as fo:
+                fo.write(input_files[field])
+            shutil.copy(path, backup_dir)
 
         print("uploading waveform")
         return "Waveform file uploaded"
@@ -187,6 +171,8 @@ class HTTPServer(object):
     def tester_start(self, request):
         print('starting test')
 
+        waveform_path = os.path.join(upload_root_folder_path, 'input_waveform')
+        
         # start testing
         self.hardware.start_test(waveform_path)
 

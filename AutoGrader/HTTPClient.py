@@ -35,20 +35,20 @@ class HTTPClient(object):
             return False
         return True
 
-    def send_dut_output(self, f_waveform_path, f_log_path):
+    def send_dut_output(self, output_file_dict):
         try:
-            data = {
-                    'id': self.config["id"],
-                    'num_duts': 1,
-            }
-            files = {
-                    'dut0_waveform': ('waveform0.txt', open(f_waveform_path, 'rb'), 'text/plain'),
-                    'dut0_serial_log': ('serial0.bin', open(f_log_path, 'rb'), 'text/plain'),
-            }
+            data = {'id': self.config["id"]}
+            files = {}
+            for field in output_file_dict:
+                files[field] = (field, open(output_file_dict[field], 'rb'), 'text/plain')
             # The files can be big, wait longer time to transfer data back
             r = requests.post(self.remote_http + '/tb/send-dut-output/',
                     data=data, files=files, timeout=10.0)
         except:
             print('[Network Error] Cannot send grading result back to remote server')
+            import sys
+            import traceback
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_tb)
             return False
         return True

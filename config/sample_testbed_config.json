@@ -4,6 +4,7 @@
 	"remotehost" : "autograder.nesl.ucla.edu",
 	"remoteport" : 80,
 	"localport" : 8889,
+	"testbed_type": "time_sync_firing_playground",
 	"tester" : {
 		"type": "ARM Cortex-M4",
 		"path": "/dev/ttyUSB0",
