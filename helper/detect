@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+
+import subprocess
+import time
+import os
+import sys
+
+if os.getuid() != 0:
+    print("FATAL: Require root permission")
+    exit()
+
+if len(sys.argv) == 1:
+    print("FATAL: usage: prog dev_name")
+    exit()
+
+
+dev_mount_path = sys.argv[1]
+if '/' not in dev_mount_path:
+    dev_mount_path = '/media/embed-autograder/' + dev_mount_path
+
+# snapshot of ttys
+process = subprocess.Popen(['ls', '/dev/'], stdout=subprocess.PIPE)
+(output, _) = process.communicate()
+existing_ttys = output.decode().strip().split('\n')
+
+# df -h
+while True:
+    process = subprocess.Popen(['df', '-h'], stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+    (output, err) = process.communicate()
+
+    # clear error first
+    find_stale_dev = False
+    if err:
+        for line in err.decode().strip().split('\n'):
+            if line.startswith('df:') and 'Input/output error' in line:
+                mount_path = line.split()[1].split(':')[0]
+                if subprocess.call(['umount', mount_path]) == 0:
+                    print('Umount ' + mount_path)
+                find_stale_dev = True
+    if not find_stale_dev:
+        break
+            
+existing_dev = {}
+for line in output.decode().strip().split('\n')[1:]:
+    dev = line.split()[0]
+    existing_dev[dev] = line
+
+while True:
+    extra_dev = {}
+    process = subprocess.Popen(['df', '-h'], stdout=subprocess.PIPE)
+    (output, _) = process.communicate()
+    for line in output.decode().strip().split('\n')[1:]:
+        dev = line.split()[0]
+        if dev not in existing_dev:
+            extra_dev[dev] = line
+    if len(extra_dev) >= 2:
+        print('ERROR: Two devices are added at the same time', extra_dev)
+        exit()
+    if len(extra_dev) == 1:
+        break
+    time.sleep(0.3)
+
+for dev in extra_dev:
+    the_extra_dev = dev
+    the_extra_dev_line = extra_dev[dev]
+
+print('dev: ' + the_extra_dev)
+time.sleep(2)
+
+subprocess.call(['umount', the_extra_dev])
+time.sleep(0.2)
+
+subprocess.call(['mount', the_extra_dev, dev_mount_path])
+print('Mount to: ' + dev_mount_path)
+time.sleep(0.2)
+
+process = subprocess.Popen(['ls', '/dev/'], stdout=subprocess.PIPE)
+(output, _) = process.communicate()
+for tty in output.decode().strip().split('\n'):
+    if tty not in existing_ttys:
+        print('New tty: ' + tty)
+
