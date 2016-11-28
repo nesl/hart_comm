@@ -44,15 +44,15 @@ class HTTPServer(object):
         
         print("Removing old codes from DUT (id=%d)" % dut_id)
         subprocess.call(['rm', '-rf', '%s/*' % mount_path])
-        time.sleep(0.3)
+        time.sleep(3)
         
         print("programming %sfirmware on DUT %d" % (firmware_short_desp, dut_id))
         shutil.copy(firmware_path, mount_path)
-        time.sleep(0.3)
+        time.sleep(3)
         
         print("Unmounting.. (id=%d) %s" % (dut_id, dev_path))
         subprocess.call(['umount', dev_path])
-        time.sleep(0.3)
+        time.sleep(3)
         
         print("Mounting back (id=%d) %s %s" % (dut_id, dev_path, mount_path))
         subprocess.call(['mount', dev_path, mount_path])
@@ -87,7 +87,7 @@ class HTTPServer(object):
         firmware_path = os.path.join(upload_root_folder_path, 'dut_binary.bin')
 
         # initialize DUTs by burning do-nothing firmware
-        for dut_id in [1, 2]:
+        for dut_id in [1, 2, 3]:
             self.burn_firmware_on_dut(dut_id, self.dut_configs[dut_id]['do_nothing_firmware'],
                     firmware_short_desp='blank')
 
@@ -98,6 +98,11 @@ class HTTPServer(object):
 
         for dut_id in [1, 2]:
             self.burn_firmware_on_dut(dut_id, firmware_path, firmware_short_desp='student')
+        
+        dut_id = 3
+        self.burn_firmware_on_dut(dut_id, self.dut_configs[dut_id]['real_firmware'],
+                    firmware_short_desp='time sync helper')
+
 
         # after upload the binaries to DUT, it takes some time to refresh
         time.sleep(4.0)
