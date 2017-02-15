@@ -1,27 +1,84 @@
 {
-	"type" : "Intel NUC",
-	"id" : 1,
-	"remotehost" : "autograder.nesl.ucla.edu",
-	"remoteport" : 80,
-	"localport" : 8889,
+	"type": "Intel NUC",
+	"id": 1,
 	"testbed_type": "time_sync_firing_playground",
-	"tester" : {
-		"type": "ARM Cortex-M4",
-		"path": "/dev/ttyUSB0",
-		"tickrate": 1e-6,
-		"maxevents": 7000,
-		"timeresolution": 1e-6
+	"connection": {
+		"remosthost": "autograder.nesl.ucla.edu",
+		"remoteport": 80,
+		"localport": 8889
 	},
-	"duts" : [
-		{
-			"name": "mbed1",
-			"type": "mbed",
-			"id" : 1,
-			"mount" : "/media/embed-autograder/DUT/",
-			"dev_path": "/dev/sdc",
-			"usb_path": "/dev/ttyACM0",
-			"do_nothing_firmware": "../do_nothing_firmware/NUCLEO_F746ZG.bin"
+	"required_input_files": [
+		"dut_binary.bin",
+		"input_waveform"
+	],
+	"required_output_files": [
+		"file_output_waveform",
+		"file_dut1_serial",
+		"file_dut2_serial",
+		"file_byte_exchange_report"
+	],
+	"hardware_list": {
+		"tester": {
+			"class": "STM32",
+			"init_params": {
+				"input_waveform_file": "input_waveform",
+				"output_waveform_file": ""
+			},
+			"type": "ARM Cortex-M4",
+			"path": "/dev/ttyUSB0",
+			"tickrate": 1e-6,
+			"maxevents": 7000,
+			"timeresolution": 1e-6
+		},
+		"student_dut1" : {
+			"class": "Mbed",
+			"init_params": {
+				"mount" : "/media/embed-autograder/DUT1/",
+				"dev_path": "/dev/sdc",
+				"usb_path": "/dev/ttyACM1",
+				"do_nothing_firmware": "../do_nothing_firmware/NUCLEO_F746ZG.bin",
+				"executed_binary_source": "hardware engine",
+				"binary_name": "dut_binary.bin",
+				"serial_output": "file_dut1_serial"
+			},
+			"type": "mbed"
+		},
+		"student_dut2" : {
+			"class": "Mbed",
+			"init_params": {
+				"mount" : "/media/embed-autograder/DUT2/",
+				"dev_path": "/dev/sdd",
+				"usb_path": "/dev/ttyACM2",
+				"do_nothing_firmware": "../do_nothing_firmware/NUCLEO_F746ZG.bin",
+				"executed_binary_source": "hardware engine",
+				"binary_name": "dut_binary.bin",
+				"serial_output": "file_dut2_serial"
+			},
+			"type": "mbed"
+		},
+		"tester_mbed" : {
+			"class": "Mbed",
+			"init_params": {
+				"mount" : "/media/embed-autograder/DUT3/",
+				"dev_path": "/dev/sde",
+				"usb_path": "/dev/ttyACM3",
+				"do_nothing_firmware": "../do_nothing_firmware/NUCLEO_F746ZG.bin",
+				"executed_binary_source": "local file system",
+				"binary_path": "../../master_tester.bin",
+				"serial_output": "file_byte_exchange_report"
+			},
+			"type": "mbed"
+		},
+		"logic_saleae" : {
+			"class": "LogicSaleaeWrapper",
+			"init_params": {
+				"output_waveform_file": "file_output_waveform"
+			},
+			"type": "Logic Saleae"
 		}
+	},
+	"hardware_init_sequence": [
+		"tester", "student_dut1", "student_dut2", "tester_mbed", "logic_saleae"
 	],
 	"wires" : [
 		{
