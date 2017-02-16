@@ -92,7 +92,6 @@ class STM32(HardwareBase, threading.Thread):
             self.alive = False
 
     def on_execute(self):
-        #TODO: For reading input waveform, we need to have another thread
         for line in self.fin:
             self.sendOnePacketInCsvFormat(line)
             terms = line.split(',')
@@ -102,6 +101,8 @@ class STM32(HardwareBase, threading.Thread):
                 print('(HE) UART device does not exist, not able to send the command')
                 return
             print ('(HE) Writing to UART', data)
+            #TODO: need a lock for the serial.
+            #TODO: have to check is it still alive or not
             self.dev.write(data)
 
     def on_terminate(self):
@@ -125,6 +126,7 @@ class STM32(HardwareBase, threading.Thread):
 
             # Because we set a read timeout, chances are we only get a 
             # partial of a packet
+            #TODO: need a lock for the serial.
             rx_buffer += self.dev.read(self.TOTAL_PKT_LEN)
             
             # Thus, if it's not a complete packet yet, read more
