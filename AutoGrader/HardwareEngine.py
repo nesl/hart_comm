@@ -23,13 +23,12 @@ dut3_serial_path = os.path.join(upload_root_folder_path, 'dut3_serial')
 
 
 class HardwareEngine(object):
+    """
     CMD_RESET_DUT = 'U'
     CMD_RESET_TESTER = 'R'
     CMD_ENABLE_ANALOG = 'O'
     CMD_TERMINATE = 'E'
 
-    status = 'IDLE'
-    config = None
     
     he_uart = None
     he_baudrate = 460800
@@ -48,8 +47,34 @@ class HardwareEngine(object):
 
     http_client = None
     dut_configs = None  # a shorthand to access dut-related configs
+    """
+
+    status = 'IDLE'
+    config = None
+
+    hardware_dict = None
+    hardware_init_order = None
 
     def __init__(self, config):
+        self.config = config
+        hardware_dict = config['hardware_list']
+
+        # get hardware initialization order
+        if not 'hardware_init_order' in config:
+            self.hardware_init_order = []
+            for h in hardware_dict:
+                self.hardware_init_order.append(h)
+        else:
+            self.hardware_init_order = config['hardware_init_order']
+            if len(self.hardware_init_order) != len(hardware_dict):
+                raise Exception('hardware_list and hardware_init_order do not match in configuration file')
+            for h in self.hardware_init_order:
+                if h not in hardware_dict:
+                    raise Exception('hardware_list and hardware_init_order do not match in configuration file')
+
+        #TODO: based on hardware dict, inflate all hardware instances
+
+        """
         # copy config JSON
         self.config = config
         self.dut_configs = {}
@@ -66,6 +91,7 @@ class HardwareEngine(object):
             raise Exception('No Logic Seleae detected')
         self.seleae_dev.set_active_channels([0,1,2,3], [])
         self.seleae_dev.set_capture_seconds(130)
+        """
 
     def add_http_client(self, client):
         self.http_client = client
