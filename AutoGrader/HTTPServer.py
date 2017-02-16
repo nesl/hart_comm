@@ -1,63 +1,48 @@
 import json
 from klein import Klein
-import subprocess
 import time
 import datetime
 import os
-import shutil
 
 # firmware upload path
 upload_root_folder_path = os.path.join('.', 'uploads')
 backup_folder_path = os.path.join(upload_root_folder_path, 'backups')
 
-required_dut_file_fields = ['dut_binary.bin']
-required_input_file_fields = ['input_waveform']
 
 class HTTPServer(object):
     app = Klein()
-    config = None
-    hardware = None
-    dut_configs = None  # a shorthand to access dut-related configs
+    connection_config = None
+    hardware_engine = None
+    required_input_files = None
 
 
-    def __init__(self, config):
-        self.config = config
-        self.dut_configs = {}
-        for d in self.config["duts"]:
-            self.dut_configs[ d["id"] ] = d
+    def __init__(self, connection_config, required_input_files):
+        self.connection_config = connection_config
+        self.required_input_files = required_input_files
 
     def addHardware(self, hw):
-        self.hardware = hw
+        self.hardware_engine = hw
 
     def start(self):
         self.app.run('0.0.0.0', self.config["localport"] )
 
-    def burn_firmware_on_dut(self, dut_id, firmware_path, firmware_short_desp=None):
-        # To make the burning process smoother, we have to copy the code to mbeds, unmound mbeds,
-        # and mound mbeds. After we adapt to it, we didn't see any burning error.
-        if not firmware_short_desp:
-            firmware_short_desp = ''
-        else:
-            firmware_short_desp += ' '
-        mount_path = self.dut_configs[dut_id]['mount']
-        dev_path = self.dut_configs[dut_id]['dev_path']
-        
-        print("Removing old codes from DUT (id=%d)" % dut_id)
-        subprocess.call(['rm', '-rf', '%s/*' % mount_path])
-        time.sleep(3)
-        
-        print("programming %sfirmware on DUT %d" % (firmware_short_desp, dut_id))
-        shutil.copy(firmware_path, mount_path)
-        time.sleep(3)
-        
-        print("Unmounting.. (id=%d) %s" % (dut_id, dev_path))
-        subprocess.call(['umount', dev_path])
-        time.sleep(3)
-        
-        print("Mounting back (id=%d) %s %s" % (dut_id, dev_path, mount_path))
-        subprocess.call(['mount', dev_path, mount_path])
-        time.sleep(0.3)
+    @app.route('/tb/grade_assignment/', methods=['POST'])
+    def grade_assignment(self, request):
+        input_files = {}
+        for field in self.required_input_files:
+            file_binary = request.args.get(field.encode())
+            if file_binary is None:
+                print('HTTPServer: Error: field "%s" is not specified' % field)
+                #TODO: return code 403
+                return "Missing field"
+            input_files[field] = file_binary[0]
 
+        if self.hardware_engine.request_grade_assignment(input_files):
+            return "Will grade assignment"
+        else:
+            #TODO: return code 403
+            return "Abort"
+            
     @app.route('/dut/program/', methods=['POST'])
     def dut_program(self, request):
         dut_files = {}
@@ -87,27 +72,13 @@ class HTTPServer(object):
         firmware_path = os.path.join(upload_root_folder_path, 'dut_binary.bin')
 
         # initialize DUTs by burning do-nothing firmware
-        for dut_id in [1, 2, 3]:
-            self.burn_firmware_on_dut(dut_id, self.dut_configs[dut_id]['do_nothing_firmware'],
-                    firmware_short_desp='blank')
 
         # after upload the binaries to DUT, it takes some time to refresh
-        time.sleep(8.0)
-        self.hardware.reset_dut()
+        self.hardware_engine.reset_dut()
         time.sleep(2.0)
 
-        for dut_id in [1, 2]:
-            self.burn_firmware_on_dut(dut_id, firmware_path, firmware_short_desp='student')
-        
-        dut_id = 3
-        self.burn_firmware_on_dut(dut_id, self.dut_configs[dut_id]['real_firmware'],
-                    firmware_short_desp='time sync helper')
 
-
-        # after upload the binaries to DUT, it takes some time to refresh
-        time.sleep(4.0)
-
-        self.hardware.reset_dut()
+        self.hardware_engine.reset_dut()
 
         return "Firmware updated"
 
@@ -155,7 +126,7 @@ class HTTPServer(object):
             return
 
         # reset DUT
-        self.hardware.reset_dut()
+        self.hardware_engine.reset_dut()
 
         request.setHeader('Content-Type', 'text/plain')
         return "DUT [%s] reset request received" % dut_id
@@ -166,7 +137,7 @@ class HTTPServer(object):
         print('resetting tester')
 
         # reset tester
-        self.hardware.reset_hardware_engine()
+        self.hardware_engine.reset_hardware_engine()
 
         request.setHeader('Content-Type', 'text/plain')
         return "Tester reset request received"
@@ -179,7 +150,7 @@ class HTTPServer(object):
         waveform_path = os.path.join(upload_root_folder_path, 'input_waveform')
         
         # start testing
-        self.hardware.start_test(waveform_path)
+        self.hardware_engine.start_test(waveform_path)
 
         request.setHeader('Content-Type', 'text/plain')
         return "Tester start request received"
@@ -187,9 +158,9 @@ class HTTPServer(object):
     # GET TESTER STATUS
     @app.route('/tb/status/', methods=['GET'])
     def tester_status(self, request):
-        if not self.hardware:
+        if not self.hardware_engine:
             return "ERROR_NOHARDWARE"
         else:
             print('Tester status requested')
-            return self.hardware.get_status()
+            return self.hardware_engine.get_status()
 

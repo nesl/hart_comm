@@ -6,7 +6,6 @@ import os
 import shutil
 import datetime
 import traceback
-import saleae
 
 from .UART_HE_Transceiver import *
 from .UART_DUT_Transceiver import *
@@ -24,14 +23,6 @@ dut3_serial_path = os.path.join(upload_root_folder_path, 'dut3_serial')
 
 class HardwareEngine(object):
     """
-    CMD_RESET_DUT = 'U'
-    CMD_RESET_TESTER = 'R'
-    CMD_ENABLE_ANALOG = 'O'
-    CMD_TERMINATE = 'E'
-
-    
-    he_uart = None
-    he_baudrate = 460800
     dummy_out_waveform_file = None
     
     dut1_uart = None
@@ -85,12 +76,6 @@ class HardwareEngine(object):
         self.he_uart = UART_HE_Transceiver(
                 self.he_baudrate, self.config["tester"]["path"], self.on_he_data_rx)
 
-        # get logic saleae instance
-        self.seleae_dev = saleae.Saleae()
-        if not self.seleae_dev:
-            raise Exception('No Logic Seleae detected')
-        self.seleae_dev.set_active_channels([0,1,2,3], [])
-        self.seleae_dev.set_capture_seconds(130)
         """
 
     def add_http_client(self, client):
@@ -116,9 +101,6 @@ class HardwareEngine(object):
             self.dut2_uart = None
             self.dut3_uart.close()
             self.dut3_uart = None
-            self.seleae_dev.capture_stop()
-            self.seleae_dev.export_data2('/tmp/logic.csv')
-            shutil.copy('/tmp/logic.csv', output_waveform_path)
 
             # backup
             now = datetime.datetime.now().strftime('%Y-%m-%d.%H:%M:%S.%f')
@@ -165,7 +147,6 @@ class HardwareEngine(object):
         self.dut3_uart = UART_DUT_Transceiver(
                 self.dut3_baudrate, self.dut_configs[3]["usb_path"], dut3_serial_path)
         
-        self.seleae_dev.capture_start()
 
         # open waveform file and give commands
         with open(wavefile_name, 'r') as wfile:
@@ -205,4 +186,17 @@ class HardwareEngine(object):
 
     def enable_anlog_reading(self):
         self.he_uart.sendCommand(self.CMD_ENABLE_ANALOG)
-
+    
+    def notify_terminate(self):
+        #TODO: notify all hardware terminate
+        pass
+        
+    def request_grade_assignment(self, input_files, secret_code):
+        """
+        Return:
+          True if succesfully storing the data
+        """
+        #TODO: store input files somewhere
+        #TODO: update status
+        #TODO: create a new thread to start the grading thing
+        return True

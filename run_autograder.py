@@ -12,18 +12,18 @@ config = json.load(open(config_file))
 print('===== AutoGrader Testbed [%d] ===== ' % config["id"])
 
 # ========== HTTP SERVER ==========
-http_server = AutoGrader.HTTPServer(config)
+http_server = AutoGrader.HTTPServer(config['connection'], config['required_input_files'])
 
 # ========== HTTP CLIENT ==========
 http_client = AutoGrader.HTTPClient(config)
 
 # ========== HARDWARE ENGINE ==========
-hardware = AutoGrader.HardwareEngine(config)
-http_server.addHardware(hardware)
-hardware.add_http_client(http_client)
+hardware_engine = AutoGrader.HardwareEngine(config)
+http_server.addHardware(hardware_engine)
+hardware_engine.add_http_client(http_client)
 
 # ========== TASK SCHEDULER ===========
-scheduler = BackgroundScheduler( standalone=True )
+scheduler = BackgroundScheduler(standalone=True)
 
 # ========== LOGGING SETTINGS ==========
 logging.basicConfig()
