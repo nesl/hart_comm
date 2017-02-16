@@ -9,7 +9,7 @@ import shutil
 
 class Mbed(HardwareBase, threading.Thread):
     # parameters
-    baud_rate = 460800
+    baud_rate = 115200
     mount_path = None
     dev_path = None
     usb_path = None
@@ -28,9 +28,9 @@ class Mbed(HardwareBase, threading.Thread):
     byte_written = None
 
     # thread status
-    alive = True
+    alive = None
 
-    def __init__(self, name, config):
+    def __init__(self, name, config, hardware_engine):
         threading.Thread.__init__(self, name="dutserial")
         
         if 'baud' in config:
@@ -93,6 +93,8 @@ class Mbed(HardwareBase, threading.Thread):
         tmp_dev.stopbits = serial.STOPBITS_ONE
         tmp_dev.timeout = 0.01
         tmp_dev.writeTimeout = None
+        
+        self.alive = True
 
         try:
             tmp_dev.open() 
