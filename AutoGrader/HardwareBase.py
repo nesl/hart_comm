@@ -4,14 +4,14 @@ class HardwareBase(object):
 
     def on_before_execution(self):
         """
-        This callback will be called right before the testbed runs the task. This allows the
-        hardware to prepare before the task is running
+        This callback will be called when a testbed is about to run a task. This allows the
+        hardware to prepare before the task is running.
         """
         pass
 
-    def on_execution(self):
+    def on_execute(self):
         """
-        This callback is called when the task is running.
+        This callback is called when the task starts.
         """
         pass
 

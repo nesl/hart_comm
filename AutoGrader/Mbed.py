@@ -76,8 +76,6 @@ class Mbed(HardwareBase, threading.Thread):
         self.name = name
         self.config = config
 
-
-
     def on_before_execution(self):
         self._burn_firmware(blank_firmware_path, firmware_short_desp='blank')
         time.sleep(4.0)
@@ -106,7 +104,7 @@ class Mbed(HardwareBase, threading.Thread):
             self.f_serial.close()
             self.alive = False
 
-    def on_execution(self):
+    def on_execute(self):
         pass
 
     def on_terminate(self):
