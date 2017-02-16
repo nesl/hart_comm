@@ -1,20 +1,17 @@
 import requests
 
 class HTTPClient(object):
-    config = None
-    remote_port = None
-    remote_host = None
     remote_http = None
 
     def __init__(self, config):
-        self.config = config
-        self.remote_host = config["remotehost"]
-        self.remote_port = config["remoteport"]
-        self.remote_http = 'https://%s' % (self.remote_host)
+        remote_host = config["remotehost"]
+        http_s = 's' if 'use_https' in config and config['use_https'] else ''
+        port_prefix = (':%d' % config["remoteport"]) if 'remoteport' in config else ''
+        self.remote_http = 'http%s://%s%s' % (http_s, remote_host, port_prefix)
 
     def send_tb_summary(self, summary):
         try:
-            r = requests.post( self.remote_http+'/tb/send-summary/',
+            r = requests.post(self.remote_http + '/tb/send-summary/',
                     data={'summary': summary},
                     headers={'content-type': "application/x-www-form-urlencoded"},
                     timeout=1.0)
@@ -23,10 +20,9 @@ class HTTPClient(object):
             return False
         return True
 
-
     def send_tb_status(self, status):
         try:
-            r = requests.post( self.remote_http+'/tb/send-status/',
+            r = requests.post(self.remote_http + '/tb/send-status/',
                     data={'id':self.config["id"], 'status': status},
                     headers={'content-type': "application/x-www-form-urlencoded"},
                     timeout=1.0)

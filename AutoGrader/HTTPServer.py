@@ -24,7 +24,7 @@ class HTTPServer(object):
         self.hardware_engine = hw
 
     def start(self):
-        self.app.run('0.0.0.0', self.config["localport"] )
+        self.app.run('0.0.0.0', self.connection_config["listening_port"])
 
     @app.route('/tb/grade_assignment/', methods=['POST'])
     def grade_assignment(self, request):

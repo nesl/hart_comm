@@ -12,10 +12,10 @@ config = json.load(open(config_file))
 print('===== AutoGrader Testbed [%d] ===== ' % config["id"])
 
 # ========== HTTP SERVER ==========
-http_server = AutoGrader.HTTPServer(config['connection'], config['required_input_files'])
+http_server = AutoGrader.HTTPServer(config['connection']['as_server'], config['required_input_files'])
 
 # ========== HTTP CLIENT ==========
-http_client = AutoGrader.HTTPClient(config)
+http_client = AutoGrader.HTTPClient(config['connection']['as_client'])
 
 # ========== HARDWARE ENGINE ==========
 hardware_engine = AutoGrader.HardwareEngine(config)
