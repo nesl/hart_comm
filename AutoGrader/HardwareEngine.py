@@ -6,6 +6,7 @@ import os
 import shutil
 import datetime
 import traceback
+import importlib
 
 from .UART_HE_Transceiver import *
 from .UART_DUT_Transceiver import *
@@ -53,30 +54,24 @@ class HardwareEngine(object):
         # get hardware initialization order
         if not 'hardware_init_order' in config:
             self.hardware_init_order = []
-            for h in hardware_dict:
-                self.hardware_init_order.append(h)
+            for hardware_name in config['hardware_list']:
+                self.hardware_init_order.append(hardware_name)
         else:
             self.hardware_init_order = config['hardware_init_order']
-            if len(self.hardware_init_order) != len(hardware_dict):
+            if len(self.hardware_init_order) != len(config['hardware_list']):
                 raise Exception('hardware_list and hardware_init_order do not match in configuration file')
-            for h in self.hardware_init_order:
-                if h not in hardware_dict:
+            for hardware_name in self.hardware_init_order:
+                if hardware_name not in config['hardware_list']:
                     raise Exception('hardware_list and hardware_init_order do not match in configuration file')
 
-        #TODO: based on hardware dict, inflate all hardware instances
-
-        """
-        # copy config JSON
-        self.config = config
-        self.dut_configs = {}
-        for d in self.config["duts"]:
-            self.dut_configs[ d["id"] ] = d
-
-        # init UART transceiver
-        self.he_uart = UART_HE_Transceiver(
-                self.he_baudrate, self.config["tester"]["path"], self.on_he_data_rx)
-
-        """
+        self.hardware_dict = {}
+        for hardware_name in config['hardware_list']:
+            hardware_config = config['hardware_list'][hardware_name]
+            init_params = hardware_config['init_params']
+            module_name, class_name = hardware_config['class'].rsplit(".", 1)
+            MyClass = getattr(importlib.import_module(module_name), class_name)
+            instance = MyClass(hardware_name, init_params, self)
+            self.hardware_dict[hardware_name] = instance
 
     def add_http_client(self, client):
         self.http_client = client

@@ -6,6 +6,8 @@ import traceback
 import subprocess
 import shutil
 
+from AutoGrader.HardwareBase import HardwareBase
+
 
 class Mbed(HardwareBase, threading.Thread):
     # parameters
@@ -54,7 +56,7 @@ class Mbed(HardwareBase, threading.Thread):
         if 'executed_binary_source' not in config:
             raise Exception('"executed_binary_source" field is required')
 
-        if config['executed_binary_source'] == 'hardware_engine':
+        if config['executed_binary_source'] == 'hardware engine':
             if 'binary_name' not in config:
                 raise Exception('"binary_name" is not provided while binary source is set to be from hardware engine')
             self.testing_firmware_path = config['binary_name']

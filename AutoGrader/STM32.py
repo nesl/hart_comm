@@ -6,6 +6,8 @@ import traceback
 import subprocess
 import shutil
 
+from AutoGrader.HardwareBase import HardwareBase
+
 
 class STM32(HardwareBase, threading.Thread):
     CMD_RESET_DUT = 'U'

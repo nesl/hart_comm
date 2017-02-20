@@ -23,7 +23,7 @@
 	],
 	"hardware_list": {
 		"tester": {
-			"class": "STM32",
+			"class": "AutoGrader.STM32.STM32",
 			"init_params": {
 				"usb_path": "/dev/ttyUSB0",
 				"input_waveform_file": "input_waveform",
@@ -35,7 +35,7 @@
 			"timeresolution": 1e-6
 		},
 		"student_dut1" : {
-			"class": "Mbed",
+			"class": "AutoGrader.Mbed.Mbed",
 			"init_params": {
 				"mount_path" : "/media/embed-autograder/DUT1/",
 				"dev_path": "/dev/sdc",
@@ -48,7 +48,7 @@
 			"type": "mbed"
 		},
 		"student_dut2" : {
-			"class": "Mbed",
+			"class": "AutoGrader.Mbed.Mbed",
 			"init_params": {
 				"mount_path" : "/media/embed-autograder/DUT2/",
 				"dev_path": "/dev/sdd",
@@ -61,7 +61,7 @@
 			"type": "mbed"
 		},
 		"tester_mbed" : {
-			"class": "Mbed",
+			"class": "AutoGrader.Mbed.Mbed",
 			"init_params": {
 				"mount_path" : "/media/embed-autograder/DUT3/",
 				"dev_path": "/dev/sde",
@@ -74,7 +74,7 @@
 			"type": "mbed"
 		},
 		"logic_saleae" : {
-			"class": "LogicSaleaeWrapper",
+			"class": "AutoGrader.LogicSaleaeWrapper.LogicSaleaeWrapper",
 			"init_params": {
 				"output_waveform_file": "file_output_waveform",
 				"active_channels_A": [0, 1, 2, 3]

@@ -3,6 +3,8 @@ import traceback
 import shutil
 import saleae
 
+from AutoGrader.HardwareBase import HardwareBase
+
 
 class LogicSaleaeWrapper(HardwareBase):
     # parameters
@@ -16,7 +18,7 @@ class LogicSaleaeWrapper(HardwareBase):
     saleae_dev = None
 
 
-    def __init__(self, name, config):
+    def __init__(self, name, config, hardware_engine):
         if "output_waveform_file" not in config:
             raise Exception('"output_waveform_file" field is required')
         self.output_waveform_path = config['output_waveform_file']

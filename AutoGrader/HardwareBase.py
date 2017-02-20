@@ -1,8 +1,8 @@
 class HardwareBase(object):
-    def __init__(self, config):
+    def __init__(self, name, config, hardware_engine):
         pass
 
-    def on_before_execution(self, name, config, hardware_engine):
+    def on_before_execution(self):
         """
         This callback will be called when a testbed is about to run a task. This allows the
         hardware to prepare before the task is running.
