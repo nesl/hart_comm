@@ -23,25 +23,10 @@ dut3_serial_path = os.path.join(upload_root_folder_path, 'dut3_serial')
 
 
 class HardwareEngine(object):
-    """
-    dummy_out_waveform_file = None
-    
-    dut1_uart = None
-    dut1_baudrate = 115200
+    STATUS_IDLE = "IDLE"
+    STATUS_BUSY = "TESTING"
 
-    dut2_uart = None
-    dut2_baudrate = 115200
-
-    dut3_uart = None
-    dut3_baudrate = 115200
-
-    seleae_dev = None
-
-    http_client = None
-    dut_configs = None  # a shorthand to access dut-related configs
-    """
-
-    status = 'IDLE'
+    status = STATUS_IDLE
     config = None
 
     hardware_dict = None
@@ -82,7 +67,7 @@ class HardwareEngine(object):
         if pktType is not self.CMD_TERMINATE:
             self.dummy_out_waveform_file.write('%d, %d, %d\n' % (ord(pktType), pktTime, pktVal) )
         else: # we get a terminate packet
-            self.status = 'IDLE'
+            self.status = STATUS_IDLE
             print('Test complete.')
 
             # Stop getting result from HE. We cannot close HE UART for now as any other command
@@ -130,7 +115,7 @@ class HardwareEngine(object):
 
     def start_test(self, wavefile_name):
         # set status to busy
-        self.status = 'TESTING'
+        self.status = STATUS_TESTING
 
         # open output file for saving test results; open dut serial communication for log files
         self.dummy_out_waveform_file = open(dummy_out_waveform_path, 'w')
