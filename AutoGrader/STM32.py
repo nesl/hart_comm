@@ -111,8 +111,8 @@ class STM32(HardwareBase, threading.Thread):
         self.alive = False
     
     def on_reset_after_execution(self):
+        self.he_uart.sendCommand(self.CMD_RESET_DUT)
         #TODO: I remember we need to flush the remaining bytes, not sure where the code is
-        pass
 
     def __del__(self):
         if self.dev and self.dev.is_open:
