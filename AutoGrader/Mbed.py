@@ -32,7 +32,7 @@ class Mbed(HardwareBase, threading.Thread):
     # thread status
     alive = None
 
-    def __init__(self, name, config, hardware_engine):
+    def __init__(self, name, config, hardware_engine, file_folder):
         threading.Thread.__init__(self, name="dutserial")
         
         if 'baud' in config:
@@ -68,7 +68,7 @@ class Mbed(HardwareBase, threading.Thread):
             raise Exception('Unrecognized value in "executed_binary_source" field')
             
         if 'serial_output' in config:
-            self.serial_output_path = config['serial_output']
+            self.serial_output_path = os.path.join(file_folder, config['serial_output'])
         else:
             self.serial_output_path = '/dev/null'
 

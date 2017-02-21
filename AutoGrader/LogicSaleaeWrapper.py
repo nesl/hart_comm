@@ -17,11 +17,10 @@ class LogicSaleaeWrapper(HardwareBase):
     # Saleae instance
     saleae_dev = None
 
-
-    def __init__(self, name, config, hardware_engine):
+    def __init__(self, name, config, hardware_engine, file_folder):
         if "output_waveform_file" not in config:
             raise Exception('"output_waveform_file" field is required')
-        self.output_waveform_path = config['output_waveform_file']
+        self.output_waveform_path = os.path.join(file_folder, config['output_waveform_file'])
 
         self.seleae_dev = saleae.Saleae()
         if not self.seleae_dev:

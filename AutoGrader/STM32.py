@@ -42,7 +42,7 @@ class STM32(HardwareBase, threading.Thread):
     # thread status
     alive = True
 
-    def __init__(self, name, config, hardware_engine):
+    def __init__(self, name, config, hardware_engine, file_folder):
         threading.Thread.__init__(self, name="dutserial")
         
         if 'baud' in config:
@@ -54,10 +54,10 @@ class STM32(HardwareBase, threading.Thread):
 
         if not 'input_waveform_file' in config:
             raise Exception('"input_waveform_file" field is required')
-        self.input_waveform_path = config['input_waveform_file']
+        self.input_waveform_path = os.path.join(file_folder, config['input_waveform_file'])
 
         if 'output_waveform_file' in config and config['output_waveform_file']:
-            self.output_waveform_path = config['input_waveform_file']
+            self.output_waveform_path = os.path.join(file_folder, config['input_waveform_file'])
         else:
             self.output_waveform_path = '/dev/null'
 

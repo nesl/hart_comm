@@ -8,22 +8,20 @@ import datetime
 import traceback
 import importlib
 
-from .UART_HE_Transceiver import *
-from .UART_DUT_Transceiver import *
-
-
-# output generation path
-upload_root_folder_path = os.path.join('.', 'uploads')
-backup_folder_path = os.path.join(upload_root_folder_path, 'backups')
-
 
 class HardwareEngine(object):
     STATUS_IDLE = "IDLE"
     STATUS_BUSY = "TESTING"
 
+    # file storage
+    file_folder = os.path.join('.', 'uploads')
+    backup_root_folder = os.path.join(file_folder, 'backups')
+
+    # testbed info
     status = STATUS_IDLE
     config = None
 
+    # hardware info
     hardware_dict = None
     hardware_init_order = None
 
@@ -76,8 +74,6 @@ class HardwareEngine(object):
         for hardware_name in self.hardware_dict:
             self.hardware_dict[hardware_name].on_execute()
         
-        #TODO: when about to start the test, set a deadline
-
     def notify_terminate(self):
         self._terminate_hardware_procedure()
         
@@ -96,13 +92,13 @@ class HardwareEngine(object):
         # backup
         now = datetime.datetime.now().strftime('%Y-%m-%d.%H:%M:%S.%f')
         
-        backup_output_dir = os.path.join(backup_folder_path, 'output', now)
-        os.makedirs(backup_output_dir)
+        task_backup_folder = os.path.join(self.backup_root_folder, now)
+        os.makedirs(self.task_backup_folder)
         output_files = {}
         for file_name in self.config['required_output_files']:
-            #TODO: upload_folder + file_name
-            shutil.copy(file_name, backup_output_dir)
-            output_files[file_name] = file_name
+            file_path = os.path.join(self.file_folder, file_name)
+            shutil.copy(file_path, task_backup_folder)
+            output_files[file_name] = file_path
         
         if self.http_client.send_dut_output(output_files):
             print('Waveform file uploaded')
@@ -142,7 +138,7 @@ class HardwareEngine(object):
 
         # store assignment info
         for file_name in input_files:
-            file_path = upload_root_folder_path = os.path.join(self.upload_folder, file_name)
+            file_path = os.path.join(self.file_folder, file_name)
             with open(file_path, 'wb') as fo:
                 fo.write(input_files[file_name])
         self.task_secret_code = secret_code

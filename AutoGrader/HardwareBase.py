@@ -1,5 +1,5 @@
 class HardwareBase(object):
-    def __init__(self, name, config, hardware_engine):
+    def __init__(self, name, config, hardware_engine, file_folder):
         pass
 
     def on_before_execution(self):
