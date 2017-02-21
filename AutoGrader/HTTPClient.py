@@ -31,9 +31,9 @@ class HTTPClient(object):
             return False
         return True
 
-    def send_dut_output(self, output_file_dict):
+    def send_dut_output(self, output_file_dict, testbed_id, secret_code):
         try:
-            data = {'id': self.config["id"]}
+            data = {'id': testbed_id, 'secret_code': secret_code}
             files = {}
             for field in output_file_dict:
                 files[field] = (field, open(output_file_dict[field], 'rb'), 'text/plain')

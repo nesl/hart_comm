@@ -106,7 +106,7 @@ class HardwareEngine(object):
             shutil.copy(file_path, task_backup_folder)
             output_files[file_name] = file_path
         
-        if self.http_client.send_dut_output(output_files):
+        if self.http_client.send_dut_output(output_files, self.config['id'], secret_code):
             print('Waveform file uploaded')
         else:
             print('Unable to upload output to server')
@@ -148,7 +148,7 @@ class HardwareEngine(object):
             with open(file_path, 'wb') as fo:
                 fo.write(input_files[file_name])
         self.task_secret_code = secret_code
-        self.task_execution_time_sec = execution_time_sec
+        self.task_execution_time_sec = execution_time_sec if execution_time_sec else 600
 
         # start the grading task asynchronously
         threading.Thread(target=self._grade, name=('id=%s' % self.config['id'])).start()

@@ -37,7 +37,28 @@ class HTTPServer(object):
                 return "Missing field"
             input_files[field] = file_binary[0]
 
-        if self.hardware_engine.request_grade_assignment(input_files):
+        # retrieve secret code
+        secret_code = request.args.get('secret_code'.encode())
+        if not secret_code:
+            request.setResponseCode(400)
+            print('HTTPServer: Error: no secret code')
+            return 'No secret code'
+        try:
+            secret_code = secret_code[0].decode()
+        except:
+            request.setResponseCode(400)
+            print('HTTPServer: Error: cannot decode secret code')
+            return 'Cannot decode secret code'
+
+        # retrieve execution time
+        execution_time = request.args.get('execution_time'.encode())
+        if execution_time:
+            try:
+                execution_time = int(execution_time[0].decode())
+            except:
+                execution_time = None
+
+        if self.hardware_engine.request_grade_assignment(input_files, secret_code, execution_time):
             return "Will grade assignment"
         else:
             request.setResponseCode(400)
