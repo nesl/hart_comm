@@ -169,3 +169,8 @@ class STM32(HardwareBase, threading.Thread):
         else:
             self.hardware_engine.notify_terminate()
             self.alive = False
+    
+    def send_command(self, cmd):
+        payload = self.START_DELIM + cmd.encode() + b'\x00\x00\x00\x00\x00\x00' + self.STOP_DELIM
+        self.dev.write(payload)
+    
