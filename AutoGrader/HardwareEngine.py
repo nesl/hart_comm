@@ -57,7 +57,13 @@ class HardwareEngine(object):
             instance = MyClass(hardware_name, init_params, self)
             self.hardware_dict[hardware_name] = instance
 
-        #TODO: check required_input_files and required_output_files should not overlap
+        for input_file in config['required_input_files']:
+            if input_file in config['required_output_files']:
+                raise Exception('required_input_files and required_output_files are overlapped')
+
+        # prepare upload folder
+        if not os.path.isdir(self.file_folder):
+            os.makedirs(self.file_folder)
         
     def add_http_client(self, client):
         self.http_client = client
