@@ -27,6 +27,12 @@ class HardwareEngine(object):
     hardware_dict = None
     hardware_init_order = None
 
+    # grading status
+    task_secret_code = None
+    task_running = None
+    task_execution_time_sec = None
+    abort_task_timer = None
+
     def __init__(self, config):
         self.config = config
         hardware_dict = config['hardware_list']
@@ -52,6 +58,8 @@ class HardwareEngine(object):
             MyClass = getattr(importlib.import_module(module_name), class_name)
             instance = MyClass(hardware_name, init_params, self)
             self.hardware_dict[hardware_name] = instance
+
+        #TODO: check required_input_files and required_output_files should not overlap
         
     def add_http_client(self, client):
         self.http_client = client
@@ -59,24 +67,28 @@ class HardwareEngine(object):
     def get_status(self):
         return self.status
 
-    def start_test(self, wavefile_name):
-        # set status to busy
-        self.status = STATUS_TESTING
+    def reset_devices(self):
+        for hardware_name in self.hardware_dict:
+            self.hardware_dict[hardware_name].on_before_execution()
 
+    def start_test(self):
         # notify all hardware the execution just begins
         for hardware_name in self.hardware_dict:
             self.hardware_dict[hardware_name].on_execute()
         
         #TODO: when about to start the test, set a deadline
 
-    def reset_devices(self):
-        for hardware_name in self.hardware_dict:
-            self.hardware_dict[hardware_name].on_before_execution()
-
     def notify_terminate(self):
         self._terminate_hardware_procedure()
         
     def _terminate_hardware_procedure(self):
+        if not self.task_running:
+            return
+
+        self.task_running = False
+
+        self.abort_task_timer.cancel()
+        
         # send terminate signal to all hardware
         for hardware_name in self.hardware_dict:
             self.hardware_dict[hardware_name].on_terminate()
@@ -110,12 +122,33 @@ class HardwareEngine(object):
             print('IDLE status sent')
         else:
             print('Unable to post status to server')
-        
-    def request_grade_assignment(self, input_files, secret_code):
+
+    def _grade_thread(self):
+        self.reset_devices()
+        self.task_running = True
+        self.start_test()
+        self.abort_task_timer = threading.Timer(self.task_execution_time_sec, self._force_abort_task)
+        self.abort_task_timer.start()
+
+    def request_grade_assignment(self, input_files, secret_code, execution_time_sec):
         """
         Return:
           True if succesfully storing the data
         """
-        #TODO: store input files somewhere
-        #TODO: create a new thread to start the grading thing
+        if self.status != IDLE
+            return False
+        
+        self.status = STATUS_TESTING
+
+        # store assignment info
+        for file_name in input_files:
+            file_path = upload_root_folder_path = os.path.join(self.upload_folder, file_name)
+            with open(file_path, 'wb') as fo:
+                fo.write(input_files[file_name])
+        self.task_secret_code = secret_code
+        self.task_execution_time_sec = execution_time_sec
+
+        # start the grading task asynchronously
+        threading.Thread(target=self._grade, name=('id=%s' % self.config['id'])).start()
+
         return True
