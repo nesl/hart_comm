@@ -54,7 +54,7 @@ class HardwareEngine(object):
             init_params = hardware_config['init_params']
             module_name, class_name = hardware_config['class'].rsplit(".", 1)
             MyClass = getattr(importlib.import_module(module_name), class_name)
-            instance = MyClass(hardware_name, init_params, self)
+            instance = MyClass(hardware_name, init_params, self, self.file_folder)
             self.hardware_dict[hardware_name] = instance
 
         for input_file in config['required_input_files']:
@@ -137,7 +137,7 @@ class HardwareEngine(object):
         Return:
           True if succesfully storing the data
         """
-        if self.status != IDLE
+        if self.status != IDLE:
             return False
         
         self.status = STATUS_TESTING

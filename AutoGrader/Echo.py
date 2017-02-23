@@ -1,0 +1,67 @@
+import os
+import threading
+import time
+
+from AutoGrader.HardwareBase import HardwareBase
+
+
+class Echo(HardwareBase, threading.Thread):
+    # parameters
+    input_path = None
+    output_path = None
+
+    # device info
+    name = None
+    config = None
+
+    # parent
+    hardware_engine = None
+
+    # serial
+    dev = None
+
+    # files
+    fin = None
+    fout = None
+
+    # thread status
+    alive = True
+
+    def __init__(self, name, config, hardware_engine, file_folder):
+        threading.Thread.__init__(self, name="dutserial")
+        
+        if not 'input_file' in config:
+            raise Exception('"input_file" field is required')
+        self.input_waveform_path = os.path.join(file_folder, config['input_file'])
+
+        if not 'output_file' in config:
+            raise Exception('"output_file" field is required')
+        self.input_waveform_path = os.path.join(file_folder, config['output_file'])
+
+        self.name = name
+        self.config = config
+        self.hardware_engine = hardware_engine
+
+    def on_before_execution(self):
+        self.alive = True
+
+    def on_execute(self):
+        # open waveform file and give commands
+        self.fin = open(input_path, 'r')
+        self.fout = open(output_path, 'w')
+
+    def on_terminate(self):
+        self.alive = False
+        self.fin.close()
+        self.out.close()
+    
+    def on_reset_after_execution(self):
+        self.he_uart.sendCommand(self.CMD_RESET_DUT)
+
+    def run(self):
+        time.sleep(5)
+        if self.alive:
+            line = self.fin.readline()
+            self.fout.write(line)
+            if line == "TERMINATE":
+                self.hardware_engine.notify_terinate()
