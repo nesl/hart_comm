@@ -78,8 +78,8 @@ class STM32(HardwareBase, threading.Thread):
         tmp_dev.writeTimeout = None
 
         # open waveform file and give commands
-        fin = open(input_wavefile_path, 'r')
-        fout = open(output_waveform_path, 'w')
+        self.fin = open(input_wavefile_path, 'r')
+        self.fout = open(output_waveform_path, 'w')
 
         self.alive = True
         
