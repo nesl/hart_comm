@@ -29,13 +29,14 @@ class HTTPServer(object):
     @app.route('/tb/grade_assignment/', methods=['POST'])
     def grade_assignment(self, request):
         input_files = {}
-        for field in self.required_input_files:
-            file_binary = request.args.get(field.encode())
+        for file_name in self.required_input_files:
+            field_name = "file_" + file_name
+            file_binary = request.args.get(field_name.encode())
             if file_binary is None:
-                print('HTTPServer: Error: field "%s" is not specified' % field)
+                print('HTTPServer: Error: field "%s" is not specified' % field_name)
                 request.setResponseCode(400)
                 return "Missing field"
-            input_files[field] = file_binary[0]
+            input_files[file_name] = file_binary[0]
 
         # retrieve secret code
         secret_code = request.args.get('secret_code'.encode())
@@ -54,7 +55,7 @@ class HTTPServer(object):
         execution_time = request.args.get('execution_time'.encode())
         if execution_time:
             try:
-                execution_time = int(execution_time[0].decode())
+                execution_time = max(float(execution_time[0].decode()), 1.0)
             except:
                 execution_time = None
 

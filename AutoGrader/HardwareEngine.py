@@ -11,7 +11,7 @@ import importlib
 
 class HardwareEngine(object):
     STATUS_IDLE = "IDLE"
-    STATUS_BUSY = "TESTING"
+    STATUS_TESTING = "TESTING"
 
     # file storage
     file_folder = os.path.join('.', 'uploads')
@@ -99,14 +99,14 @@ class HardwareEngine(object):
         now = datetime.datetime.now().strftime('%Y-%m-%d.%H:%M:%S.%f')
         
         task_backup_folder = os.path.join(self.backup_root_folder, now)
-        os.makedirs(self.task_backup_folder)
+        os.makedirs(task_backup_folder)
         output_files = {}
         for file_name in self.config['required_output_files']:
             file_path = os.path.join(self.file_folder, file_name)
             shutil.copy(file_path, task_backup_folder)
             output_files[file_name] = file_path
         
-        if self.http_client.send_dut_output(output_files, self.config['id'], secret_code):
+        if self.http_client.send_dut_output(output_files, self.task_secret_code):
             print('Waveform file uploaded')
         else:
             print('Unable to upload output to server')
@@ -116,7 +116,7 @@ class HardwareEngine(object):
             self.hardware_dict[hardware_name].on_reset_after_execution()
 
         # all tasks are done. update status
-        self.status = STATUS_IDLE
+        self.status = self.STATUS_IDLE
         print('Test complete.')
 
         # update status over HTTP
@@ -129,7 +129,8 @@ class HardwareEngine(object):
         self.reset_devices()
         self.task_running = True
         self.start_test()
-        self.abort_task_timer = threading.Timer(self.task_execution_time_sec, self._force_abort_task)
+        self.abort_task_timer = threading.Timer(
+                self.task_execution_time_sec, self._terminate_hardware_procedure)
         self.abort_task_timer.start()
 
     def request_grade_assignment(self, input_files, secret_code, execution_time_sec):
@@ -137,10 +138,10 @@ class HardwareEngine(object):
         Return:
           True if succesfully storing the data
         """
-        if self.status != IDLE:
+        if self.status != self.STATUS_IDLE:
             return False
         
-        self.status = STATUS_TESTING
+        self.status = self.STATUS_TESTING
 
         # store assignment info
         for file_name in input_files:
@@ -151,6 +152,6 @@ class HardwareEngine(object):
         self.task_execution_time_sec = execution_time_sec if execution_time_sec else 600
 
         # start the grading task asynchronously
-        threading.Thread(target=self._grade, name=('id=%s' % self.config['id'])).start()
+        threading.Thread(target=self._grade_thread, name=('id=%s' % self.config['id'])).start()
 
         return True

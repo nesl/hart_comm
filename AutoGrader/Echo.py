@@ -32,11 +32,11 @@ class Echo(HardwareBase, threading.Thread):
         
         if not 'input_file' in config:
             raise Exception('"input_file" field is required')
-        self.input_waveform_path = os.path.join(file_folder, config['input_file'])
+        self.input_path = os.path.join(file_folder, config['input_file'])
 
         if not 'output_file' in config:
             raise Exception('"output_file" field is required')
-        self.input_waveform_path = os.path.join(file_folder, config['output_file'])
+        self.output_path = os.path.join(file_folder, config['output_file'])
 
         self.name = name
         self.config = config
@@ -47,17 +47,14 @@ class Echo(HardwareBase, threading.Thread):
 
     def on_execute(self):
         # open waveform file and give commands
-        self.fin = open(input_path, 'r')
-        self.fout = open(output_path, 'w')
+        self.fin = open(self.input_path, 'r')
+        self.fout = open(self.output_path, 'w')
 
     def on_terminate(self):
         self.alive = False
         self.fin.close()
-        self.out.close()
+        self.fout.close()
     
-    def on_reset_after_execution(self):
-        self.he_uart.sendCommand(self.CMD_RESET_DUT)
-
     def run(self):
         time.sleep(5)
         if self.alive:
