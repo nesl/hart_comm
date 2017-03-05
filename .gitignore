@@ -42,6 +42,7 @@
 
 # uploads
 uploads/
+upload_backups/
 
 # project note
 programming_instructions.txt
