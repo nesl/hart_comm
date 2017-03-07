@@ -82,7 +82,7 @@
 			"type": "Logic Saleae"
 		}
 	},
-	"hardware_init_order": [
+	"hardware_processing_order": [
 		"tester", "student_dut1", "student_dut2", "tester_mbed", "logic_saleae"
 	],
 	"wires" : [
