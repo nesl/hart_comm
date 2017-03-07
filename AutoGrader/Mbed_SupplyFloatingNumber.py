@@ -13,7 +13,7 @@ from AutoGrader.HardwareBase import HardwareBase
 
 class Mbed_SupplyFloatingNumber(HardwareBase, threading.Thread):
     # parameters
-    baud_rate = 921600
+    baud_rate = 115200
     mount_path = None
     dev_path = None
     usb_path = None
@@ -123,7 +123,7 @@ class Mbed_SupplyFloatingNumber(HardwareBase, threading.Thread):
                 terms = f.readline().strip().split(' ')
                 num_bytes, waiting_time = int(terms[0]), float(terms[1])
                 self.sending_events.append((num_bytes, waiting_time))
-        self.expected_received_bytes = (((self.num_samples / 100) * 21) + 3) * 4
+        self.expected_received_bytes = (((self.num_samples // 100) * 21) + 3) * 4
 
         # configure the mbed
         time.sleep(4.0)
@@ -172,10 +172,12 @@ class Mbed_SupplyFloatingNumber(HardwareBase, threading.Thread):
             for i in range(chunk_size):
                 if not self.alive:
                     return
-                print('(DUT) surely going to send chunk_size=%d, wait_time=%.3f' % (chunk_size, wait_time))
-                print(self.dev.write(self.input_bytes[bidx:bidx+1]))
+                #print('(DUT) surely going to send chunk_size=%d, wait_time=%.3f' % (chunk_size, wait_time))
+                self.dev.write(self.input_bytes[bidx:bidx+1])
+                #print(self.dev.write(self.input_bytes[bidx:bidx+1]))
                 bidx += 1
-                print('(DUT) send %d/%d' % (bidx, len(self.input_bytes)))
+                #print('(DUT) send %d/%d' % (bidx, len(self.input_bytes)))
+            print('(DUT) send %d/%d' % (bidx, len(self.input_bytes)))
             time.sleep(wait_time)
 
     def on_terminate(self):
@@ -193,7 +195,8 @@ class Mbed_SupplyFloatingNumber(HardwareBase, threading.Thread):
 
             if self.byte_written < self.expected_received_bytes:
                 self.byte_written += 1
-                print('(DUT) %d/%d written bytes' % (self.byte_written, self.expected_received_bytes))
+                #if self.byte_written % 1 == 0:
+                print('(DUT) %d/%d written bytes' % (self.byte_written, self.expected_received_bytes), self.byte_written == self.expected_received_bytes)
                 self.f_serial.write(b)
                 self.f_serial.flush()
                 if self.byte_written == self.expected_received_bytes:
