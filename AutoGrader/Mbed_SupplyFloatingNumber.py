@@ -146,7 +146,7 @@ class Mbed_SupplyFloatingNumber(HardwareBase, threading.Thread):
         tmp_dev.bytesize = serial.EIGHTBITS
         tmp_dev.stopbits = serial.STOPBITS_ONE
         tmp_dev.timeout = 0.01
-        tmp_dev.writeTimeout = None
+        tmp_dev.writeTimeout = 0.0001
         
         self.alive = True
 
@@ -155,7 +155,8 @@ class Mbed_SupplyFloatingNumber(HardwareBase, threading.Thread):
         print('(DUT) UART is open')
 
         # pull obselete bytes from last session
-        for i in range(1000000):  # clean up to 1M bytes
+        for i in range(4096):  # clean up to 4K bytes
+            print('clean', i)
             if not self.dev.read(1):
                 break
         print('(DUT) Clean old bytes from the last session')
@@ -173,7 +174,11 @@ class Mbed_SupplyFloatingNumber(HardwareBase, threading.Thread):
                 if not self.alive:
                     return
                 #print('(DUT) surely going to send chunk_size=%d, wait_time=%.3f' % (chunk_size, wait_time))
-                self.dev.write(self.input_bytes[bidx:bidx+1])
+                try:
+                    self.dev.write(self.input_bytes[bidx:bidx+1])
+                except:
+                    pass
+
                 #print(self.dev.write(self.input_bytes[bidx:bidx+1]))
                 bidx += 1
                 #print('(DUT) send %d/%d' % (bidx, len(self.input_bytes)))
