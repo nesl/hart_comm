@@ -48,5 +48,5 @@ upload_backups/
 programming_instructions.txt
 
 # config
-config/config_testbench.json
+config/
 
