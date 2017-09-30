@@ -1,5 +1,7 @@
+import os
 import sys
 import serial
+import time
 import threading
 import struct
 import traceback
@@ -21,6 +23,7 @@ class Mbed(HardwareBase, threading.Thread):
     log_size = 1000000
 
     # device info
+    hardware_engine = None
     name = None
     config = None
 
@@ -29,8 +32,10 @@ class Mbed(HardwareBase, threading.Thread):
     f_serial = None
     byte_written = None
 
-    # thread status
+    # working threads
     alive = None
+    serial_reading_thread = None
+    serial_writing_thread = None
 
     def __init__(self, name, config, hardware_engine, file_folder):
         threading.Thread.__init__(self, name="dutserial")
@@ -75,14 +80,26 @@ class Mbed(HardwareBase, threading.Thread):
         if 'log_size' in config:
             self.log_size = config['log_size']
 
+        # backup configurations
+        self.hardware_engine = hardware_engine
         self.name = name
         self.config = config
+        
+        # take file system snapshot
+        if os.getuid() != 0:
+            raise Exception("FATAL: Require root permission")
+        
+        print("Unmounting.. (mbed name=%s) %s" % (self.name, self.dev_path))
+        subprocess.call(['umount', self.dev_path])
+        time.sleep(3)
+        
+        print("Mounting back (mbed name=%s) %s %s" % (self.name, self.dev_path, self.mount_path))
+        subprocess.call(['mount', self.dev_path, self.mount_path])
+        time.sleep(0.3)
 
     def on_before_execution(self):
         self._burn_firmware(blank_firmware_path, firmware_short_desp='blank')
-        time.sleep(4.0)
         self._burn_firmware(testing_firmware_path, firmware_short_desp='testing')
-        time.sleep(4.0)
         
         self.f_serial = open(self.serial_output_path, 'wb')
         self.byte_written = 0
@@ -94,19 +111,26 @@ class Mbed(HardwareBase, threading.Thread):
         tmp_dev.bytesize = serial.EIGHTBITS
         tmp_dev.stopbits = serial.STOPBITS_ONE
         tmp_dev.timeout = 0.01
-        tmp_dev.writeTimeout = None
+        tmp_dev.writeTimeout = 0.0001
         
         self.alive = True
 
-        try:
-            tmp_dev.open() 
-            self.dev = tmp_dev
-            print('(DUT) UART is open')
-            self.start()
-        except:
-            print('(DUT) UART device unable to open',  sys.exc_info()[0], sys.exc_info()[1])
-            self.f_serial.close()
-            self.alive = False
+        tmp_dev.open() 
+        self.dev = tmp_dev
+        print('(mbed) UART is open')
+
+        # pull obselete bytes from last session
+        self.dev.reset_input_buffer()
+        self.dev.reset_output_buffer()
+        #for i in range(4096):  # clean up to 4K bytes
+        #    print('clean', i)
+        #    if not self.dev.read(1):
+        #        break
+        print('(mbed) Clean old bytes from the last session')
+
+        self.serial_reading_thread = threading.Thread(target=self._read_serial,
+                name=('mbed-%s' % self.name))
+        self.serial_reading_thread.start()
 
     def on_execute(self):
         pass
@@ -115,7 +139,6 @@ class Mbed(HardwareBase, threading.Thread):
         self.alive = False
     
     def on_reset_after_execution(self):
-        #TODO: I remember we need to flush the remaining bytes, not sure where the code is
         pass
 
     def __del__(self):
@@ -133,9 +156,9 @@ class Mbed(HardwareBase, threading.Thread):
         try:
             self.dev.close()
             self.f_serial.close()
-            print('(DUT) UART is closed')
+            print('(mbed) UART is closed')
         except:
-            print('(DUT) UART device unable to close')
+            print('(mbed) UART device unable to close')
         self.dev = None
         self.f_serial = None
 
@@ -148,18 +171,38 @@ class Mbed(HardwareBase, threading.Thread):
         else:
             firmware_short_desp += ' '
         
-        print("Removing old codes from DUT (name=%s)" % self.name)
+        print("Removing old codes from mbed (name=%s)" % self.name)
         subprocess.call(['rm', '-rf', '%s/*' % self.mount_path])
         time.sleep(3)
         
-        print("programming %sfirmware on DUT (name=%s)" % (firmware_short_desp, self.name))
+        print("programming %sfirmware on mbed (name=%s)" % (firmware_short_desp, self.name))
         shutil.copy(firmware_path, self.mount_path)
         time.sleep(3)
         
-        print("Unmounting.. (DUT name=%s) %s" % (self.name, self.dev_path))
+        print("Unmounting.. (mbed name=%s) %s" % (self.name, self.dev_path))
         subprocess.call(['umount', self.dev_path])
         time.sleep(3)
         
-        print("Mounting back (DUT name=%s) %s %s" % (self.name, self.dev_path, self.mount_path))
+        print("Mounting back (mbed name=%s) %s %s" % (self.name, self.dev_path, self.mount_path))
         subprocess.call(['mount', self.dev_path, self.mount_path])
-        time.sleep(0.3)
+        time.sleep(3)
+    
+    def _read_serial(self):
+        while self.alive:
+            b = self.dev.read(1)
+            if not b:
+                continue
+
+            if self.byte_written < self.log_size:
+                self.byte_written += 1
+                self.f_serial.write(b)
+                self.f_serial.flush()
+
+        try:
+            self.dev.close()
+            self.f_serial.close()
+            print('(mbed) UART is closed')
+        except:
+            print('(mbed) UART device unable to close')
+        self.dev = None
+        self.f_serial = None

@@ -1,10 +1,9 @@
+import os
 import sys
 import serial
 import threading
 import struct
 import traceback
-import subprocess
-import shutil
 
 from AutoGrader.HardwareBase import HardwareBase
 
@@ -86,24 +85,22 @@ class STM32(HardwareBase, threading.Thread):
         try:
             tmp_dev.open() 
             self.dev = tmp_dev
-            print('(DUT) UART is open')
+            print('(STM32) UART is open')
             self.start()
         except:
-            print('(DUT) UART device unable to open',  sys.exc_info()[0], sys.exc_info()[1])
+            print('(STM32) UART device unable to open',  sys.exc_info()[0], sys.exc_info()[1])
             self.f_serial.close()
             self.alive = False
 
     def on_execute(self):
         for line in self.fin:
-            self.sendOnePacketInCsvFormat(line)
             terms = line.split(',')
             pkt_type, pkt_time, pkt_val = chr(int(terms[0])), int(terms[1]), int(terms[2])
             binary = struct.pack('=ccIHc', self.START_DELIM, pkt_type.encode('ascii'), pkt_time, pkt_val, self.STOP_DELIM)
             if not self.dev:
-                print('(HE) UART device does not exist, not able to send the command')
+                print('(STM32) UART device does not exist, not able to send the command')
                 return
-            print ('(HE) Writing to UART', data)
-            #TODO: need a lock for the serial.
+            print('(STM32) Writing to UART', data)
             #TODO: have to check is it still alive or not
             self.dev.write(data)
 
@@ -112,7 +109,6 @@ class STM32(HardwareBase, threading.Thread):
     
     def on_reset_after_execution(self):
         self.he_uart.sendCommand(self.CMD_RESET_DUT)
-        #TODO: I remember we need to flush the remaining bytes, not sure where the code is
 
     def __del__(self):
         if self.dev and self.dev.is_open:
@@ -128,7 +124,6 @@ class STM32(HardwareBase, threading.Thread):
 
             # Because we set a read timeout, chances are we only get a 
             # partial of a packet
-            #TODO: need a lock for the serial.
             rx_buffer += self.dev.read(self.TOTAL_PKT_LEN)
             
             # Thus, if it's not a complete packet yet, read more
@@ -140,16 +135,16 @@ class STM32(HardwareBase, threading.Thread):
             if rx_buffer[0:1] == self.START_DELIM and rx_buffer[8:9] == self.STOP_DELIM:
                 self._handle_packet_payload(rx_buffer[1:8])
             else:
-                print('(HE) bad packet!', rx_buffer[0:9])
+                print('(STM32) bad packet!', rx_buffer[0:9])
 
             rx_buffer = rx_buffer[9:]
 
         try:
             self.dev.flush()
             self.dev.close()
-            print('(HE) UART is closed')
+            print('(STM32) UART is closed')
         except:
-            print('(HE) UART device unable to close')
+            print('(STM32) UART device unable to close')
         self.dev = None
     
     def _handle_packet_payload(self, binary):
