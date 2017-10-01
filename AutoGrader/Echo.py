@@ -46,19 +46,17 @@ class Echo(HardwareBase, threading.Thread):
         self.alive = True
 
     def on_execute(self):
-        # open waveform file and give commands
         self.fin = open(self.input_path, 'r')
         self.fout = open(self.output_path, 'w')
-
-    def on_terminate(self):
-        self.alive = False
-        self.fin.close()
-        self.fout.close()
-    
-    def run(self):
+        
         time.sleep(5)
         if self.alive:
             line = self.fin.readline()
             self.fout.write(line)
             if line == "TERMINATE":
                 self.hardware_engine.notify_terinate()
+
+    def on_terminate(self):
+        self.alive = False
+        self.fin.close()
+        self.fout.close()

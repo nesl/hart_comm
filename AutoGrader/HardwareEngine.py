@@ -96,8 +96,6 @@ class HardwareEngine(object):
 
         self.task_running = False
 
-        print(self)
-        print(self.aborting_task_timer)
         self.aborting_task_timer.cancel()
         
         # send terminate signal to all hardware
@@ -115,7 +113,7 @@ class HardwareEngine(object):
             output_files[file_name] = file_path
         
         if self.http_client.send_dut_output(output_files, self.task_secret_code):
-            print('Waveform file uploaded')
+            print('Output files uploaded')
         else:
             print('Unable to upload output to server')
         
