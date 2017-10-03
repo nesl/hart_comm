@@ -53,7 +53,7 @@ class Mbed(HardwareBase, threading.Thread):
 
         if "usb_path" not in config:
             raise Exception('"usb_path" field is required')
-        self.dev_path = config['usb_path']
+        self.usb_path = config['usb_path']
 
         if 'blank_firmware_path' in config:
             self.blank_firmware_path = config['blank_firmware_path']
@@ -64,7 +64,7 @@ class Mbed(HardwareBase, threading.Thread):
         if config['executed_binary_source'] == 'hardware engine':
             if 'binary_name' not in config:
                 raise Exception('"binary_name" is not provided while binary source is set to be from hardware engine')
-            self.testing_firmware_path = config['binary_name']
+            self.testing_firmware_path = os.path.join(file_folder, config['binary_name'])
         elif config['executed_binary_source'] == 'local file system':
             if 'binary_path' not in config:
                 raise Exception('"binary_path" is not provided while binary source is set to be from local file system')
@@ -98,8 +98,8 @@ class Mbed(HardwareBase, threading.Thread):
         time.sleep(0.3)
 
     def on_before_execution(self):
-        self._burn_firmware(blank_firmware_path, firmware_short_desp='blank')
-        self._burn_firmware(testing_firmware_path, firmware_short_desp='testing')
+        self._burn_firmware(self.blank_firmware_path, firmware_short_desp='blank')
+        self._burn_firmware(self.testing_firmware_path, firmware_short_desp='testing')
         
         self.f_serial = open(self.serial_output_path, 'wb')
         self.byte_written = 0

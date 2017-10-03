@@ -1,11 +1,10 @@
 import os
-import threading
 import time
 
 from AutoGrader.HardwareBase import HardwareBase
 
 
-class Echo(HardwareBase, threading.Thread):
+class Echo(HardwareBase):
     # parameters
     input_path = None
     output_path = None
@@ -28,8 +27,6 @@ class Echo(HardwareBase, threading.Thread):
     alive = True
 
     def __init__(self, name, config, hardware_engine, file_folder):
-        threading.Thread.__init__(self, name="dutserial")
-        
         if not 'input_file' in config:
             raise Exception('"input_file" field is required')
         self.input_path = os.path.join(file_folder, config['input_file'])
