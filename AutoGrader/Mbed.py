@@ -145,24 +145,6 @@ class Mbed(HardwareBase, threading.Thread):
         if self.dev and self.dev.is_open:
             self.dev.close()
 
-    def run(self):
-        while self.alive:
-            b = self.dev.read(1)
-            if self.byte_written < self.log_size:
-                self.byte_written += 1
-                self.f_serial.write(b)
-                self.f_serial.flush()
-
-        try:
-            self.dev.close()
-            self.f_serial.close()
-            print('(mbed) UART is closed')
-        except:
-            print('(mbed) UART device unable to close')
-        self.dev = None
-        self.f_serial = None
-
-    
     def _burn_firmware(self, firmware_path, firmware_short_desp=None):
         # To make the burning process smoother, we have to copy the code to mbeds, unmound mbeds,
         # and mound mbeds. After we adapt to it, we didn't see any burning error.
