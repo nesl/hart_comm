@@ -23,11 +23,24 @@
 	],
 	"hardware_list": {
 		"tester": {
-			"class": "AutoGrader.STM32.STM32",
+			"class": "AutoGrader.devices.STM32.STM32",
 			"init_params": {
 				"usb_path": "/dev/ttyUSB0",
 				"input_waveform_file": "input_waveform",
-				"output_waveform_file": ""
+				"output_waveform_file": "",
+				"output_metadata": {
+					"tick_frequency": 5000,
+					"pins": [
+						{
+							"label": "Hardware pin",
+							"indexes": [0]
+						},
+						{
+							"label": "Software pin",
+							"indexes": [1]
+						}
+					]
+				}
 			},
 			"type": "ARM Cortex-M4",
 			"tickrate": 1e-6,
@@ -35,7 +48,7 @@
 			"timeresolution": 1e-6
 		},
 		"student_dut1" : {
-			"class": "AutoGrader.Mbed.Mbed",
+			"class": "AutoGrader.devices.Mbed.Mbed",
 			"init_params": {
 				"mount_path" : "/media/embed-autograder/DUT1/",
 				"dev_path": "/dev/sdc",
@@ -48,7 +61,7 @@
 			"type": "mbed"
 		},
 		"student_dut2" : {
-			"class": "AutoGrader.Mbed.Mbed",
+			"class": "AutoGrader.devices.Mbed.Mbed",
 			"init_params": {
 				"mount_path" : "/media/embed-autograder/DUT2/",
 				"dev_path": "/dev/sdd",
@@ -61,7 +74,7 @@
 			"type": "mbed"
 		},
 		"tester_mbed" : {
-			"class": "AutoGrader.Mbed.Mbed",
+			"class": "AutoGrader.devices.Mbed.Mbed",
 			"init_params": {
 				"mount_path" : "/media/embed-autograder/DUT3/",
 				"dev_path": "/dev/sde",
@@ -74,7 +87,7 @@
 			"type": "mbed"
 		},
 		"logic_saleae" : {
-			"class": "AutoGrader.LogicSaleaeWrapper.LogicSaleaeWrapper",
+			"class": "AutoGrader.devices.LogicSaleaeWrapper.LogicSaleaeWrapper",
 			"init_params": {
 				"output_waveform_file": "file_output_waveform",
 				"active_channels_A": [0, 1, 2, 3]

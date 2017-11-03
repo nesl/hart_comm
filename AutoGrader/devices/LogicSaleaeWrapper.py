@@ -3,7 +3,7 @@ import traceback
 import shutil
 import saleae
 
-from AutoGrader.HardwareBase import HardwareBase
+from AutoGrader.devices import HardwareBase
 
 
 class LogicSaleaeWrapper(HardwareBase):

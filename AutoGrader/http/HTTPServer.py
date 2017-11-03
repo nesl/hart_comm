@@ -1,8 +1,9 @@
 import json
-from klein import Klein
 import time
 import datetime
 import os
+
+from klein import Klein
 
 # firmware upload path
 upload_root_folder_path = os.path.join('.', 'uploads')
@@ -20,7 +21,7 @@ class HTTPServer(object):
         self.connection_config = connection_config
         self.required_input_files = required_input_files
 
-    def addHardware(self, hw):
+    def add_hardware(self, hw):
         self.hardware_engine = hw
 
     def start(self):

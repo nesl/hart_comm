@@ -8,7 +8,7 @@ import subprocess
 import shutil
 import time
 
-from AutoGrader.HardwareBase import HardwareBase
+from AutoGrader.devices import HardwareBase
 
 
 class Mbed_SupplyFloatingNumber(HardwareBase, threading.Thread):

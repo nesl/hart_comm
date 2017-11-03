@@ -8,7 +8,7 @@ import numpy
 import datetime
 import os
 
-from AutoGrader.HardwareBase import HardwareBase
+from AutoGrader.devices import HardwareBase
 
 
 class Keithley2602A(HardwareBase):

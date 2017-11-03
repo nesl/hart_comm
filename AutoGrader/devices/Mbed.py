@@ -8,7 +8,7 @@ import traceback
 import subprocess
 import shutil
 
-from AutoGrader.HardwareBase import HardwareBase
+from AutoGrader.devices import HardwareBase
 
 
 class Mbed(HardwareBase, threading.Thread):

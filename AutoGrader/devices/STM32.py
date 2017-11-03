@@ -6,7 +6,7 @@ import struct
 import time
 import traceback
 
-from AutoGrader.HardwareBase import HardwareBase
+from AutoGrader.devices import HardwareBase
 
 
 class STM32(HardwareBase):

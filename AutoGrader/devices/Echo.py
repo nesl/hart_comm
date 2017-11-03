@@ -1,7 +1,7 @@
 import os
 import time
 
-from AutoGrader.HardwareBase import HardwareBase
+from AutoGrader.devices import HardwareBase
 
 
 class Echo(HardwareBase):

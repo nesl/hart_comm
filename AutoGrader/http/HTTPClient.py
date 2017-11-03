@@ -13,7 +13,7 @@ class HTTPClient(object):
         self.remote_http = 'http%s://%s%s' % (http_s, remote_host, port_prefix)
         self.report_listening_port = server_listening_port
 
-    def send_tb_summary(self, listening_port, testbed_type):
+    def send_tb_summary(self, testbed_type):
         try:
             r = requests.post(self.remote_http + '/tb/send-summary/',
                     data={'localport': self.report_listening_port, 'testbed_type': testbed_type},
