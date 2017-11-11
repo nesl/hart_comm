@@ -5,7 +5,7 @@ import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from AutoGrader import HardwareEngine
+from AutoGrader import HardwareEngineHttp
 from AutoGrader.http import HTTPServer, HTTPClient
 
 
@@ -25,7 +25,7 @@ def main():
     )
 
     # get hardware engine
-    hardware_engine = HardwareEngine(config)
+    hardware_engine = HardwareEngineHttp(config)
     http_server.add_hardware(hardware_engine)
     hardware_engine.add_http_client(http_client)
 

@@ -8,6 +8,7 @@ import importlib
 import subprocess
 
 class HardwareEngine(object):
+
     STATUS_IDLE = "IDLE"
     STATUS_TESTING = "TESTING"
 
@@ -27,7 +28,6 @@ class HardwareEngine(object):
     execution_threads = None
 
     # grading status
-    task_secret_code = None
     task_running = None
     task_execution_time_sec = None
     aborting_task_timer = None
@@ -66,30 +66,33 @@ class HardwareEngine(object):
         if not os.path.isdir(self.backup_root_folder):
             os.makedirs(self.backup_root_folder)
         
-    def add_http_client(self, client):
-        self.http_client = client
+    def grade_task(self, execution_time_sec):
+        print('grade_task enter, set timer %f sec' % execution_time_sec)
+        self._reset_devices()
+        self.task_running = True
+        self._start_test()
+        self.aborting_task_timer = threading.Timer(
+                execution_time_sec, self._terminate_hardware_procedure)
+        self.aborting_task_timer.start()
 
-    def get_status(self):
-        return self.status
-
-    def reset_devices(self):
+    #
+    # methods to handle devices
+    #
+    def _reset_devices(self):
         for hardware_name in self.hardware_processing_order:
             self.hardware_dict[hardware_name].on_before_execution()
 
-    def start_test(self):
+    def _start_test(self):
         # notify all hardware the execution just begins
         self.execution_threads = []
         for hardware_name in self.hardware_processing_order:
             thread_name = 'Exe-%s' % hardware_name
-            print('start_test', thread_name)
+            print('_start_test', thread_name)
             t = threading.Thread(name=thread_name,
                     target=self.hardware_dict[hardware_name].on_execute)
             t.start()
             self.execution_threads.append(t)
-        
-    def notify_terminate(self):
-        self._terminate_hardware_procedure()
-        
+    
     def _terminate_hardware_procedure(self):
         if not self.task_running:
             return
@@ -106,16 +109,6 @@ class HardwareEngine(object):
         for th in self.execution_threads:
             print('wait for', th)
             th.join()
-
-        output_files = {}
-        for file_name in self.config['required_output_files']:
-            file_path = os.path.join(self.file_folder, file_name)
-            output_files[file_name] = file_path
-        
-        if self.http_client.send_dut_output(output_files, self.task_secret_code):
-            print('Output files uploaded')
-        else:
-            print('Unable to upload output to server')
         
         # send clean signal to all hardware
         for hardware_name in self.hardware_processing_order:
@@ -130,46 +123,19 @@ class HardwareEngine(object):
         # all tasks are done. update status
         self.status = self.STATUS_IDLE
         print('Test complete.')
+    
+    #
+    # query status
+    #
+    def get_status(self):
+        return self.status
 
-        # update status over HTTP
-        if self.http_client.send_tb_status(self.status):
-            print('IDLE status sent')
-        else:
-            print('Unable to post status to server')
-
-    def _grade_thread(self):
-        print('_grade_thread')
-        self.reset_devices()
-        self.task_running = True
-        self.start_test()
-        self.aborting_task_timer = threading.Timer(
-                self.task_execution_time_sec, self._terminate_hardware_procedure)
-        print('_grade_thread', self.aborting_task_timer)
-        self.aborting_task_timer.start()
-
-    def request_grade_assignment(self, input_files, secret_code, execution_time_sec):
+    #
+    # callbacks
+    #
+    def notify_terminate(self):
         """
-        Return:
-          True if succesfully storing the data
+        Expceted call-sites are hardware devices or aborting_task_timer
         """
-        if self.status != self.STATUS_IDLE:
-            return False
+        self._terminate_hardware_procedure()
         
-        self.status = self.STATUS_TESTING
-
-        # store assignment info
-        if not os.path.isdir(self.file_folder):
-            os.makedirs(self.file_folder)
-        subprocess.call(['rm', '-rf', '%s/*' % self.file_folder])
-        for file_name in input_files:
-            file_path = os.path.join(self.file_folder, file_name)
-            with open(file_path, 'wb') as fo:
-                fo.write(input_files[file_name])
-        self.task_secret_code = secret_code
-        self.task_execution_time_sec = execution_time_sec if execution_time_sec else 600
-
-        print('request_grade_assignment')
-        # start the grading task asynchronously
-        threading.Thread(target=self._grade_thread, name=('id=%s' % self.config['id'])).start()
-
-        return True
