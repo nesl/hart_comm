@@ -9,6 +9,16 @@ from AutoGrader import HardwareEngineHttp
 from AutoGrader.http import HTTPServer, HTTPClient
 
 
+# send testbed summary
+def send_summary():
+    try:
+        http_client.send_tb_summary(config['testbed_type'])
+    except Exception as e:
+        #TODO: delete these
+        import traceback
+        exc_info = sys.exc_info()
+        traceback.print_exception(*exc_info)
+
 def main():
     # load config file
     config_file = sys.argv[1]
@@ -37,16 +47,6 @@ def main():
     print(config)
     if 'testbed_type' not in config:
         raise Exception('"testbed_type" cannot be found in configuration file')
-
-    # send testbed summary
-    def send_summary():
-        try:
-            http_client.send_tb_summary(config['testbed_type'])
-        except Exception as e:
-            #TODO: delete these
-            import traceback
-            exc_info = sys.exc_info()
-            traceback.print_exception(*exc_info)
 
     # schedule periodic jobs
     send_summary()
