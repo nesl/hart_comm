@@ -22,7 +22,7 @@ class HardwareEngineHttp(HardwareEngine):
         self.http_client = None
         self.task_secret_code = None
         self.status = HardwareEngineHttp.STATUS_IDLE
-        self.backup_root_folder = back_root_folder
+        self.backup_root_folder = backup_root_folder
 
         # prepare backup upload folder
         if not os.path.isdir(self.backup_root_folder):
@@ -32,23 +32,14 @@ class HardwareEngineHttp(HardwareEngine):
         self.http_client = client
 
     def _terminate_hardware_procedure(self):
-        #TODO: This method is largely duplicated from
-        #      HardwareEngine._terminate_hardware_procedure(), please find a way to refactor it
+        # _terminate_hardware_procedure() may be called several times by different devices, but
+        # should only be executed once. We use self.task_running as an indicator of whether
+        # the method has been called before, and the variable is changed in
+        # HardwareEngine._terminate_hardware_procedure().
         if not self.task_running:
             return
 
-        self.task_running = False
-
-        self.aborting_task_timer.cancel()
-        
-        # send terminate signal to all hardware
-        for hardware_name in self.hardware_processing_order:
-            print('terminate', hardware_name)
-            self.hardware_dict[hardware_name].on_terminate()
-
-        for th in self.execution_threads:
-            print('wait for', th)
-            th.join()
+        super()._terminate_hardware_procedure()
 
         # upload files
         output_files = {}
@@ -60,10 +51,6 @@ class HardwareEngineHttp(HardwareEngine):
             print('Output files uploaded')
         else:
             print('Unable to upload output to server')
-        
-        # send clean signal to all hardware
-        for hardware_name in self.hardware_processing_order:
-            self.hardware_dict[hardware_name].on_reset_after_execution()
         
         # backup
         now = datetime.datetime.now().strftime('%Y-%m-%d.%H:%M:%S.%f')
