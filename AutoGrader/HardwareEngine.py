@@ -9,8 +9,8 @@ import subprocess
 
 class HardwareEngine(object):
 
-    def __init__(self, config):
-        self._initialize_variables()
+    def __init__(self, config, file_folder):
+        self._initialize_variables(file_folder)
         self._initialize_parsing_config(config)
     
     def grade_task(self, execution_time_sec):
@@ -61,12 +61,6 @@ class HardwareEngine(object):
         for hardware_name in self.hardware_processing_order:
             self.hardware_dict[hardware_name].on_reset_after_execution()
 
-        # backup
-        now = datetime.datetime.now().strftime('%Y-%m-%d.%H:%M:%S.%f')
-        task_backup_folder = os.path.join(self.backup_root_folder, now)
-        os.makedirs(task_backup_folder)
-        shutil.move(self.file_folder, task_backup_folder)
-
     #
     # callbacks
     #
@@ -79,10 +73,9 @@ class HardwareEngine(object):
     #
     # private initialization procedure
     #
-    def _initialize_variables(self):
+    def _initialize_variables(self, file_folder):
         # file storage
-        self.file_folder = os.path.join('.', 'uploads')
-        self.backup_root_folder = os.path.join('.', 'upload_backups')
+        self.file_folder = file_folder
 
         # testbed info
         self.config = None
@@ -128,7 +121,3 @@ class HardwareEngine(object):
         for input_file in config['required_input_files']:
             if input_file in config['required_output_files']:
                 raise Exception('required_input_files and required_output_files are overlapped')
-
-        # prepare backup upload folder
-        if not os.path.isdir(self.backup_root_folder):
-            os.makedirs(self.backup_root_folder)

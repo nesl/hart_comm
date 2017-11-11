@@ -15,13 +15,18 @@ class HardwareEngineHttp(HardwareEngine):
     STATUS_IDLE = "IDLE"
     STATUS_TESTING = "TESTING"
 
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self, config, file_folder, backup_root_folder):
+        super().__init__(config, file_folder)
     
         # variable initialization
         self.http_client = None
         self.task_secret_code = None
         self.status = HardwareEngineHttp.STATUS_IDLE
+        self.backup_root_folder = back_root_folder
+
+        # prepare backup upload folder
+        if not os.path.isdir(self.backup_root_folder):
+            os.makedirs(self.backup_root_folder)
 
     def add_http_client(self, client):
         self.http_client = client
