@@ -16,7 +16,6 @@ class HTTPServer(object):
     hardware_engine = None
     required_input_files = None
 
-
     def __init__(self, connection_config, required_input_files):
         self.connection_config = connection_config
         self.required_input_files = required_input_files
@@ -60,7 +59,7 @@ class HTTPServer(object):
             except:
                 execution_time = None
 
-        if self.hardware_engine.request_grade_assignment(input_files, secret_code, execution_time):
+        if self.hardware_engine.request_grade_task(input_files, secret_code, execution_time):
             return "Will grade assignment"
         else:
             request.setResponseCode(400)

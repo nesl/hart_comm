@@ -9,21 +9,41 @@ import subprocess
 
 from .HardwareEngine import HardwareEngine
 
+
 class HardwareEngineHttp(HardwareEngine):
 
+    STATUS_IDLE = "IDLE"
+    STATUS_TESTING = "TESTING"
+
     def __init__(self, config):
-        super(HardwareEngine, self).__init__(config)
+        super().__init__(config)
     
         # variable initialization
         self.http_client = None
         self.task_secret_code = None
+        self.status = HardwareEngineHttp.STATUS_IDLE
 
     def add_http_client(self, client):
         self.http_client = client
 
     def _terminate_hardware_procedure(self):
-        # terminate all hardware devices
-        super(Foo, self)._terminate_hardware_procedure()
+        #TODO: This method is largely duplicated from
+        #      HardwareEngine._terminate_hardware_procedure(), please find a way to refactor it
+        if not self.task_running:
+            return
+
+        self.task_running = False
+
+        self.aborting_task_timer.cancel()
+        
+        # send terminate signal to all hardware
+        for hardware_name in self.hardware_processing_order:
+            print('terminate', hardware_name)
+            self.hardware_dict[hardware_name].on_terminate()
+
+        for th in self.execution_threads:
+            print('wait for', th)
+            th.join()
 
         # upload files
         output_files = {}
@@ -36,6 +56,20 @@ class HardwareEngineHttp(HardwareEngine):
         else:
             print('Unable to upload output to server')
         
+        # send clean signal to all hardware
+        for hardware_name in self.hardware_processing_order:
+            self.hardware_dict[hardware_name].on_reset_after_execution()
+        
+        # backup
+        now = datetime.datetime.now().strftime('%Y-%m-%d.%H:%M:%S.%f')
+        task_backup_folder = os.path.join(self.backup_root_folder, now)
+        os.makedirs(task_backup_folder)
+        shutil.move(self.file_folder, task_backup_folder)
+        
+        # all tasks are done. update status
+        self.status = HardwareEngineHttp.STATUS_IDLE
+        print('Test complete.')
+    
         # update status over HTTP
         if self.http_client.send_tb_status(self.status):
             print('IDLE status sent')
@@ -55,10 +89,11 @@ class HardwareEngineHttp(HardwareEngine):
         Return:
           True if succesfully storing the data
         """
-        if self.status != self.STATUS_IDLE:
+
+        if self.status != HardwareEngineHttp.STATUS_IDLE:
             return False
         
-        self.status = self.STATUS_TESTING
+        self.status = HardwareEngineHttp.STATUS_TESTING
 
         # store assignment info
         if not os.path.isdir(self.file_folder):
@@ -72,16 +107,21 @@ class HardwareEngineHttp(HardwareEngine):
         if execution_time_sec is None:
             execution_time_sec = 600
 
-        self.grade_task(execution_time_sec)
         # start the grading task asynchronously
         print('request_grade_task start')
         threading.Thread(
                 target=self._grade_thread,
                 name=('id=%s' % self.config['id']),
-                args=[exection_time_sec],
+                args=[execution_time_sec],
         ).start()
 
         return True
+
+    #
+    # query status
+    #
+    def get_status(self):
+        return self.status
 
     #
     # Threads   

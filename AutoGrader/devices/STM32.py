@@ -47,7 +47,8 @@ class STM32(HardwareBase):
     execution_start_time = None
 
     def __init__(self, name, config, hardware_engine, file_folder):
-        
+       
+        print('((STM32))', file_folder)
         if 'baud' in config:
             self.baud_rate = config['baud']
 
