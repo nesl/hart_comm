@@ -1,0 +1,66 @@
+{
+	"type": "Intel NUC",
+	"id": 1,
+	"testbed_type": "ee202f17_hw2a_timestamping",
+	"connection": {
+		"as_server": {
+			"listening_port": 8889
+		},
+		"as_client": {
+			"remotehost": "autograder.nesl.ucla.edu",
+			"use_https": 1
+		}
+	},
+	"required_input_files": [
+		"command.stm32.waveform", "student_bin"
+	],
+	"required_output_files": [
+		"monitor.logicsaleae.waveform", "student_output.txt"
+	],
+	"hardware_list": {
+		"stm32" : {
+			"class": "AutoGrader.devices.STM32.STM32",
+			"init_params": {
+				"usb_path" : "/dev/ttyUSB0",
+				"input_waveform_file": "command.stm32.waveform",
+				"output_waveform_file": "_trash",
+				"output_metadata": {
+					"tick_frequency": 5000,
+					"pins": [
+						{
+							"label": "Hardware pin",
+							"indexes": [0]
+						}
+					]
+				}
+			}
+		},
+		"ox": {
+			"class": "AutoGrader.devices.LogicSaleaeWrapper.LogicSaleaeWrapper",
+			"init_params": {
+				"output_waveform_file": "monitor.logicsaleae.waveform",
+				"active_channels_A": [0, 1, 2, 3],
+				"output_metadata": {
+					"pins": [
+						{
+							"label": "Given signal",
+							"indexes": [0]
+						}
+					]
+				}
+			},
+			"type": "Logic Saleae"
+		},
+		"student_bbb": {
+			"class": "AutoGrader.devices.BBB2a.BBB2a",
+			"init_params": {
+				"binary_file": "student_bin",
+				"output_file": "student_output.txt"
+			},
+			"type": "Logic Saleae"
+		}
+	},
+	"hardware_processing_order": [
+		"stm32", "ox", "student_bbb"
+	]
+}
