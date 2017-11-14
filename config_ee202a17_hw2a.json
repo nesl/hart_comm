@@ -12,10 +12,14 @@
 		}
 	},
 	"required_input_files": [
-		"command.stm32.waveform", "student_bin"
+		"command.stm32.waveform",
+		"student_bin"
 	],
 	"required_output_files": [
-		"monitor.logicsaleae.waveform", "student_output.txt"
+		"monitor.logicsaleae.waveform",
+		"student_output.txt",
+		"stdout.txt",
+		"stderr.txt"
 	],
 	"hardware_list": {
 		"stm32" : {
@@ -55,7 +59,9 @@
 			"class": "AutoGrader.devices.BBB2a.BBB2a",
 			"init_params": {
 				"binary_file": "student_bin",
-				"output_file": "student_output.txt"
+				"output_file": "student_output.txt",
+				"stdout_file": "stdout.txt",
+				"stderr_file": "stderr.txt"
 			},
 			"type": "Logic Saleae"
 		}

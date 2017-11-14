@@ -17,6 +17,8 @@ class BBB2a(HardwareBase):
         # parameters
         self.binary_path = None
         self.output_path = None
+        self.stdout_path = None
+        self.stderr_path = None
 
         # device info
         self.name = None
@@ -31,11 +33,19 @@ class BBB2a(HardwareBase):
             raise Exception('"output_file" field is required')
         self.output_path = os.path.join(file_folder, config['output_file'])
 
+        if "stdout_file" not in config:
+            raise Exception('"stdout_file" field is required')
+        self.stdout_path = os.path.join(file_folder, config['stdout_file'])
+
+        if "stderr_file" not in config:
+            raise Exception('"stderr_file" field is required')
+        self.stderr_path = os.path.join(file_folder, config['stderr_file'])
+
         self.name = name
         self.config = config
 
     def on_before_execution(self):
-        subprocess.call(['ssh', 'root@192.168.7.2', 'testenv/clean.sh'])
+        subprocess.call(['ssh', 'root@192.168.7.2', 'testenv/prepare.sh'])
         subprocess.call(['scp', self.binary_path, 'root@192.168.7.2:~/testenv/files/student_bin'])
 
     def on_execute(self):
@@ -43,6 +53,8 @@ class BBB2a(HardwareBase):
 
     def on_terminate(self):
         subprocess.call(['scp', 'root@192.168.7.2:~/testenv/files/student_output.txt', self.output_path])
+        subprocess.call(['scp', 'root@192.168.7.2:~/testenv/files/stdout.txt', self.stdout_path])
+        subprocess.call(['scp', 'root@192.168.7.2:~/testenv/files/stderr.txt', self.stderr_path])
     
     def on_reset_after_execution(self):
         pass
