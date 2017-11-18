@@ -11,11 +11,6 @@ if [ ! -c /dev/ptp1 ]; then
     echo 'no'
 fi
 
-# config-pin
-config-pin overlay cape-universala
-config-pin P8_8 timer
-config-pin P8_10 timer
-
 # flush the queue timestamps
 testptp -d /dev/ptp1 -i 1 -L 1,1 >/dev/null 2>&1
 testptp -d /dev/ptp1 -i 1 -e 100 >/dev/null 2>&1 &
