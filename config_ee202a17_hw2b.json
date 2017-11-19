@@ -1,0 +1,58 @@
+{
+	"type": "Intel NUC",
+	"id": 1,
+	"testbed_type": "ee202f17_hw2b_generating",
+	"connection": {
+		"as_server": {
+			"listening_port": 8889
+		},
+		"as_client": {
+			"remotehost": "autograder.nesl.ucla.edu",
+			"use_https": 1
+		}
+	},
+	"required_input_files": [
+		"student_input.txt",
+		"student_bin"
+	],
+	"required_output_files": [
+		"output.logicsaleae.waveform",
+		"stdout.txt",
+		"stderr.txt"
+	],
+	"hardware_list": {
+		"ox": {
+			"class": "AutoGrader.devices.LogicSaleaeWrapper.LogicSaleaeWrapper",
+			"init_params": {
+				"output_waveform_file": "output.logicsaleae.waveform",
+				"active_channels_A": [0, 1, 2, 3],
+				"output_metadata": {
+					"pins": [
+						{
+							"label": "Hardware-based (P8.8)",
+							"indexes": [0]
+						},
+						{
+							"label": "Software-based (P9.23)",
+							"indexes": [1]
+						}
+					]
+				}
+			},
+			"type": "Logic Saleae"
+		},
+		"student_bbb": {
+			"class": "AutoGrader.devices.BBB2b.BBB2b",
+			"init_params": {
+				"binary_file": "student_bin",
+				"input_file": "student_input.txt",
+				"stdout_file": "stdout.txt",
+				"stderr_file": "stderr.txt"
+			},
+			"type": "Logic Saleae"
+		}
+	},
+	"hardware_processing_order": [
+		"ox", "student_bbb"
+	]
+}
