@@ -45,7 +45,7 @@ class BBB2b(HardwareBase):
         self.config = config
 
     def on_before_execution(self):
-        subprocess.call(['ssh', 'root@192.168.7.2', 'testenv/prepare.sh'])
+        subprocess.call(['ssh', 'root@192.168.7.2', 'testenv/prepare_2a_2b.sh'])
         subprocess.call(['scp', self.binary_path, 'root@192.168.7.2:~/testenv/files/student_bin'])
         subprocess.call(['scp', self.input_path, 'root@192.168.7.2:~/testenv/files/student_input.txt'])
 
