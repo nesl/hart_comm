@@ -14,7 +14,9 @@
 	"required_input_files": [
 		"command.stm32.waveform",
 		"student_bin",
-		"pru_bin"
+		"pru1",
+		"pru2",
+		"pru3"
 	],
 	"required_output_files": [
 		"monitor.logicsaleae.waveform",
@@ -60,7 +62,9 @@
 			"class": "AutoGrader.devices.BBB2c.BBB2c",
 			"init_params": {
 				"linux_binary_file": "student_bin",
-				"pru_binary_file": "pru_bin",
+				"pru1_file": "pru1",
+				"pru2_file": "pru2",
+				"pru3_file": "pru3",
 				"output_file": "student_output.txt",
 				"stdout_file": "stdout.txt",
 				"stderr_file": "stderr.txt"

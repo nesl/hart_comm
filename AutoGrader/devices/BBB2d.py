@@ -76,5 +76,5 @@ class BBB2d(HardwareBase):
     
     def on_reset_after_execution(self):
         subprocess.call(['ssh', 'root@192.168.7.2', 'shutdown', '-r', 'now'])
-        print("Reboot BBB and wait for 20 seconds")
-        time.sleep(20)
+        print("Reboot BBB and wait for 30 seconds")
+        time.sleep(30)
