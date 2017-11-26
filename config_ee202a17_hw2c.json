@@ -13,7 +13,7 @@
 	},
 	"required_input_files": [
 		"command.stm32.waveform",
-		"student_bin",
+		"student_linux_bin",
 		"pru1",
 		"pru2",
 		"pru3"
@@ -61,7 +61,7 @@
 		"student_bbb": {
 			"class": "AutoGrader.devices.BBB2c.BBB2c",
 			"init_params": {
-				"linux_binary_file": "student_bin",
+				"linux_binary_file": "student_linux_bin",
 				"pru1_file": "pru1",
 				"pru2_file": "pru2",
 				"pru3_file": "pru3",
