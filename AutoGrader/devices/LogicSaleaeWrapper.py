@@ -1,3 +1,4 @@
+import os
 import sys
 import traceback
 import shutil
@@ -7,6 +8,8 @@ from AutoGrader.devices import HardwareBase
 
 
 class LogicSaleaeWrapper(HardwareBase):
+    TMP_RESULT_PATH = '/tmp/logic.csv'
+
     # parameters
     output_waveform_path = None
 
@@ -40,8 +43,8 @@ class LogicSaleaeWrapper(HardwareBase):
 
     def on_terminate(self):
         self.seleae_dev.capture_stop()
-        self.seleae_dev.export_data2('/tmp/logic.csv')
-        shutil.copy('/tmp/logic.csv', self.output_waveform_path)
+        self.seleae_dev.export_data2(LogicSaleaeWrapper.TMP_RESULT_PATH)
+        shutil.move(LogicSaleaeWrapper.TMP_RESULT_PATH, self.output_waveform_path)
     
     def on_reset_after_execution(self):
         pass
