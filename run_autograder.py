@@ -2,6 +2,7 @@ import json
 import sys
 import signal
 import logging
+import os
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -10,7 +11,7 @@ from AutoGrader.http import HTTPServer, HTTPClient
 
 
 # send testbed summary
-def send_summary():
+def send_summary(http_client, config):
     try:
         http_client.send_tb_summary(config['testbed_type'])
     except Exception as e:
@@ -34,8 +35,12 @@ def main():
             server_listening_port=connection['as_server']['listening_port'],
     )
 
+    # define the working order
+    file_folder = os.path.join('.', 'uploads')
+    backup_root_folder = os.path.join('.', 'upload_backups')
+
     # get hardware engine
-    hardware_engine = HardwareEngineHttp(config)
+    hardware_engine = HardwareEngineHttp(config, file_folder, backup_root_folder)
     http_server.add_hardware(hardware_engine)
     hardware_engine.add_http_client(http_client)
 
@@ -49,8 +54,9 @@ def main():
         raise Exception('"testbed_type" cannot be found in configuration file')
 
     # schedule periodic jobs
-    send_summary()
-    scheduler.add_job(send_summary, 'interval', seconds=10)
+    send_summary(http_client, config)
+    scheduler.add_job(send_summary, 'interval', seconds=10,
+            args=[http_client, config])
     scheduler.start()
 
     # start server

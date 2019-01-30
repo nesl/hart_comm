@@ -44,6 +44,9 @@
 uploads/
 upload_backups/
 
+# solo test
+solo_test_folder/
+
 # project note
 programming_instructions.txt
 

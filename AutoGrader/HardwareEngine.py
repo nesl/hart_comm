@@ -9,63 +9,10 @@ import subprocess
 
 class HardwareEngine(object):
 
-    STATUS_IDLE = "IDLE"
-    STATUS_TESTING = "TESTING"
-
-    # file storage
-    file_folder = os.path.join('.', 'uploads')
-    backup_root_folder = os.path.join('.', 'upload_backups')
-
-    # testbed info
-    status = STATUS_IDLE
-    config = None
-
-    # hardware info
-    hardware_dict = None
-    hardware_processing_order = None
-
-    # hardware execution
-    execution_threads = None
-
-    # grading status
-    task_running = None
-    task_execution_time_sec = None
-    aborting_task_timer = None
-
-    def __init__(self, config):
-        self.config = config
-        hardware_dict = config['hardware_list']
-
-        # get hardware initialization order
-        if not 'hardware_processing_order' in config:
-            self.hardware_processing_order = []
-            for hardware_name in config['hardware_list']:
-                self.hardware_processing_order.append(hardware_name)
-        else:
-            self.hardware_processing_order = config['hardware_processing_order']
-            if len(self.hardware_processing_order) != len(config['hardware_list']):
-                raise Exception('hardware_list and hardware_processing_order do not match in configuration file')
-            for hardware_name in self.hardware_processing_order:
-                if hardware_name not in config['hardware_list']:
-                    raise Exception('hardware_list and hardware_processing_order do not match in configuration file')
-
-        self.hardware_dict = {}
-        for hardware_name in config['hardware_list']:
-            hardware_config = config['hardware_list'][hardware_name]
-            init_params = hardware_config['init_params']
-            module_name, class_name = hardware_config['class'].rsplit(".", 1)
-            MyClass = getattr(importlib.import_module(module_name), class_name)
-            instance = MyClass(hardware_name, init_params, self, self.file_folder)
-            self.hardware_dict[hardware_name] = instance
-
-        for input_file in config['required_input_files']:
-            if input_file in config['required_output_files']:
-                raise Exception('required_input_files and required_output_files are overlapped')
-
-        # prepare backup upload folder
-        if not os.path.isdir(self.backup_root_folder):
-            os.makedirs(self.backup_root_folder)
-        
+    def __init__(self, config, file_folder):
+        self._initialize_variables(file_folder)
+        self._initialize_parsing_config(config)
+    
     def grade_task(self, execution_time_sec):
         print('grade_task enter, set timer %f sec' % execution_time_sec)
         self._reset_devices()
@@ -114,22 +61,6 @@ class HardwareEngine(object):
         for hardware_name in self.hardware_processing_order:
             self.hardware_dict[hardware_name].on_reset_after_execution()
 
-        # backup
-        now = datetime.datetime.now().strftime('%Y-%m-%d.%H:%M:%S.%f')
-        task_backup_folder = os.path.join(self.backup_root_folder, now)
-        os.makedirs(task_backup_folder)
-        shutil.move(self.file_folder, task_backup_folder)
-
-        # all tasks are done. update status
-        self.status = self.STATUS_IDLE
-        print('Test complete.')
-    
-    #
-    # query status
-    #
-    def get_status(self):
-        return self.status
-
     #
     # callbacks
     #
@@ -138,4 +69,55 @@ class HardwareEngine(object):
         Expceted call-sites are hardware devices or aborting_task_timer
         """
         self._terminate_hardware_procedure()
-        
+    
+    #
+    # private initialization procedure
+    #
+    def _initialize_variables(self, file_folder):
+        # file storage
+        self.file_folder = file_folder
+
+        # testbed info
+        self.config = None
+
+        # hardware info
+        self.hardware_dict = None
+        self.hardware_processing_order = None
+
+        # hardware execution
+        self.execution_threads = None
+
+        # grading status
+        self.task_running = None
+        self.task_execution_time_sec = None
+        self.aborting_task_timer = None
+
+    def _initialize_parsing_config(self, config):
+        self.config = config
+        hardware_dict = config['hardware_list']
+
+        # get hardware initialization order
+        if not 'hardware_processing_order' in config:
+            self.hardware_processing_order = []
+            for hardware_name in config['hardware_list']:
+                self.hardware_processing_order.append(hardware_name)
+        else:
+            self.hardware_processing_order = config['hardware_processing_order']
+            if len(self.hardware_processing_order) != len(config['hardware_list']):
+                raise Exception('hardware_list and hardware_processing_order do not match in configuration file')
+            for hardware_name in self.hardware_processing_order:
+                if hardware_name not in config['hardware_list']:
+                    raise Exception('hardware_list and hardware_processing_order do not match in configuration file')
+
+        self.hardware_dict = {}
+        for hardware_name in config['hardware_list']:
+            hardware_config = config['hardware_list'][hardware_name]
+            init_params = hardware_config['init_params']
+            module_name, class_name = hardware_config['class'].rsplit(".", 1)
+            MyClass = getattr(importlib.import_module(module_name), class_name)
+            instance = MyClass(hardware_name, init_params, self, self.file_folder)
+            self.hardware_dict[hardware_name] = instance
+
+        for input_file in config['required_input_files']:
+            if input_file in config['required_output_files']:
+                raise Exception('required_input_files and required_output_files are overlapped')

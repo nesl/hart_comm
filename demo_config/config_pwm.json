@@ -1,0 +1,58 @@
+{
+	"type": "Intel NUC",
+	"id": 1,
+	"testbed_type": "ee202f17_pwm",
+	"connection": {
+		"as_server": {
+			"listening_port": 8889
+		},
+		"as_client": {
+			"remotehost": "autograder.nesl.ucla.edu",
+			"use_https": 1
+		}
+	},
+	"required_input_files": [
+		"input.stm32.waveform", "nucleo_pwm.bin"
+	],
+	"required_output_files": [
+		"output.stm32.waveform", "nucleo_serial.txt"
+	],
+	"hardware_list": {
+		"mbed_student": {
+			"class": "AutoGrader.devices.Mbed.Mbed",
+			"init_params": {
+				"mount_path" : "/media/embed-autograder/DUT1/",
+				"usb_path" : "/dev/ttyACM0",
+				"dev_path" : "/dev/sdb",
+				"blank_firmware_path": "../do_nothing_firmware/NUCLEO_F746ZG.bin",
+				"executed_binary_source": "hardware engine",
+				"binary_name": "nucleo_pwm.bin",
+				"serial_output": "nucleo_serial.txt"
+			}
+		},
+		"stm32" : {
+			"class": "AutoGrader.devices.STM32.STM32",
+			"init_params": {
+				"usb_path" : "/dev/ttyUSB0",
+				"input_waveform_file": "input.stm32.waveform",
+				"output_waveform_file": "output.stm32.waveform",
+				"output_metadata": {
+					"tick_frequency": 5000,
+					"pins": [
+						{
+							"label": "Hardware pin",
+							"indexes": [0]
+						},
+						{
+							"label": "Software pin",
+							"indexes": [1]
+						}
+					]
+				}
+			}
+		}
+	},
+	"hardware_processing_order": [
+		"stm32", "mbed_student"
+	]
+}
