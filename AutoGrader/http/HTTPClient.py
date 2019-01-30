@@ -1,24 +1,28 @@
 import requests
 
 class HTTPClient(object):
-    remote_http = None
-    report_listening_port = None
 
     def __init__(self, config, server_listening_port):
         remote_host = config["remotehost"]
         http_s = 's' if 'use_https' in config and config['use_https'] else ''
         self.ssl_verify = False if 'ssl_verify' in config and not config['ssl_verify'] else True
-        
         port_prefix = (':%d' % config["remoteport"]) if 'remoteport' in config else ''
+        
         self.remote_http = 'http%s://%s%s' % (http_s, remote_host, port_prefix)
         self.report_listening_port = server_listening_port
 
-    def send_tb_summary(self, testbed_type):
+    def send_tb_summary(self, testbed_type, status):
         try:
             r = requests.post(self.remote_http + '/tb/send-summary/',
-                    data={'localport': self.report_listening_port, 'testbed_type': testbed_type},
+                    data={
+                            'localport': self.report_listening_port,
+                            'testbed_type': testbed_type,
+                            'status': status,
+                    },
                     headers={'content-type': "application/x-www-form-urlencoded"},
-                    timeout=1.0, verify=self.ssl_verify)
+                    timeout=1.0,
+                    verify=self.ssl_verify,
+            )
             if r.status_code != 200:
                 print('[Request Error] Server rejected the request')
                 return False
@@ -37,7 +41,9 @@ class HTTPClient(object):
             r = requests.post(self.remote_http + '/tb/send-status/',
                     data={'localport': self.report_listening_port, 'status': status},
                     headers={'content-type': "application/x-www-form-urlencoded"},
-                    timeout=1.0, verify=self.ssl_verify)
+                    timeout=1.0,
+                    verify=self.ssl_verify,
+            )
             if r.status_code != 200:
                 print('[Request Error] Server rejected the request')
                 return False
