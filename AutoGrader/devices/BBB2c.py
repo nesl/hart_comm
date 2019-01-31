@@ -67,7 +67,9 @@ class BBB2c(HardwareBase):
         subprocess.call(['scp', self.pru3_path, 'root@192.168.7.2:~/testenv/files/pru3'])
 
     def on_execute(self):
+        print("(BBB2c) Start to execute program")
         subprocess.call(['ssh', 'root@192.168.7.2', 'testenv/run.py', 'pru1', 'pru2', 'pru3', 'student_output.txt'])
+        print("(BBB2c) Finish execution")
 
     def on_terminate(self):
         subprocess.call(['scp', 'root@192.168.7.2:~/testenv/files/student_output.txt', self.output_path])
@@ -76,5 +78,5 @@ class BBB2c(HardwareBase):
     
     def on_reset_after_execution(self):
         subprocess.call(['ssh', 'root@192.168.7.2', 'shutdown', '-r', 'now'])
-        print("Reboot BBB and wait for 30 seconds")
-        time.sleep(30)
+        print("Reboot BBB and wait for 50 seconds")
+        time.sleep(50)
