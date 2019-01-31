@@ -11,9 +11,9 @@ from AutoGrader.http import HTTPServer, HTTPClient
 
 
 # send testbed summary
-def send_summary(http_client, config):
+def send_summary(http_client, config, hardware_engine):
     try:
-        http_client.send_tb_summary(config['testbed_type'])
+        http_client.send_tb_summary(config['testbed_type'], hardware_engine.get_status())
     except Exception as e:
         #TODO: delete these
         import traceback
@@ -54,9 +54,9 @@ def main():
         raise Exception('"testbed_type" cannot be found in configuration file')
 
     # schedule periodic jobs
-    send_summary(http_client, config)
+    send_summary(http_client, config, hardware_engine)
     scheduler.add_job(send_summary, 'interval', seconds=10,
-            args=[http_client, config])
+            args=[http_client, config, hardware_engine])
     scheduler.start()
 
     # start server
